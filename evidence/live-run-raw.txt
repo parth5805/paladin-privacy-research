@@ -1,0 +1,63 @@
+
+> paladin-privacy-research-demo@0.1.0 start
+> ts-node ./src/index.ts
+
+[1m[36m
+=== Paladin Privacy Research — Live Demo ===
+[0m[0m
+Two projects share one Paladin network. Truth table follows.
+
+[1mIdentity map:[0m
+  node1: a_user1, a_user2                        (both Project A)
+  node2: a_agent, b_issuer                       [33m(cross-project co-tenants)[0m
+  node3: a_user3, b_investor                     [33m(cross-project co-tenants)[0m
+
+[1mCreating privacy groups...[0m
+  [32m[OK][0m ProjectA-Group1  members: { a_user1@node1, a_agent@node2 }
+  [32m[OK][0m ProjectA-Group2  members: { a_user3@node3, a_agent@node2 }
+  [32m[OK][0m ProjectB-Group1  members: { b_issuer@node2, b_investor@node3 }
+  [32m[OK][0m ProjectB-Group2  members: { b_issuer@node2, b_investor@node3 }
+
+[1mDeploying a Storage contract into each privacy group...[0m
+  [32m[OK][0m Contracts deployed.
+
+[1mWriting distinct secrets into each contract...[0m
+  [32m[OK][0m ProjectA-Group1 = 1111
+  [32m[OK][0m ProjectA-Group2 = 2222
+  [32m[OK][0m ProjectB-Group1 = 3333
+  [32m[OK][0m ProjectB-Group2 = 4444
+
+[1mAttempting reads from every identity against every group...[0m
+JSON-RPC error from pgroup_call (200 OK) PD012502: Privacy group '0xc13aceed19ebec4e107d162019b4502aa582d6b78d42c77f84c1eb96238e7339' not found
+JSON-RPC error from pgroup_call (200 OK) PD012502: Privacy group '0xc13aceed19ebec4e107d162019b4502aa582d6b78d42c77f84c1eb96238e7339' not found
+JSON-RPC error from pgroup_call (200 OK) PD011206: DOMAIN pente returned error: java.lang.IllegalArgumentException: no contract deployed at 0xa17d745079768a90b95450be7d09118e7e755d5a
+JSON-RPC error from pgroup_call (200 OK) PD011206: DOMAIN pente returned error: java.lang.IllegalArgumentException: no contract deployed at 0xa17d745079768a90b95450be7d09118e7e755d5a
+JSON-RPC error from pgroup_call (200 OK) PD011206: DOMAIN pente returned error: java.lang.IllegalArgumentException: no contract deployed at 0x7e9bccea6adf98ccd8f963cf3cdfe848b81e3454
+JSON-RPC error from pgroup_call (200 OK) PD011206: DOMAIN pente returned error: java.lang.IllegalArgumentException: no contract deployed at 0x7e9bccea6adf98ccd8f963cf3cdfe848b81e3454
+JSON-RPC error from pgroup_call (200 OK) PD011206: DOMAIN pente returned error: java.lang.IllegalArgumentException: no contract deployed at 0x7e9bccea6adf98ccd8f963cf3cdfe848b81e3454
+JSON-RPC error from pgroup_call (200 OK) PD011206: DOMAIN pente returned error: java.lang.IllegalArgumentException: no contract deployed at 0x7e9bccea6adf98ccd8f963cf3cdfe848b81e3454
+[1m
+=== Truth Table ===[0m
+[2mLegend: [M] MEMBER  |  [S] SAME-NODE-AS-MEMBER  |  [N] NON-MEMBER-NODE[0m
+[2mActual: OK (nnnn) = read succeeded returning secret nnnn, BLOCKED = read failed
+[0m
+[1mIdentity               | ProjectA-Group1      | ProjectA-Group2      | ProjectB-Group1      | ProjectB-Group2     [0m
+------------------------------------------------------------------------------------------------------------------
+a_user1@node1          | [M] [32mOK (1111)[0m         | [N] [33mBLOCKED[0m           | [N] [33mBLOCKED[0m           | [N] [33mBLOCKED[0m          
+a_user2@node1          | [S] [32mOK (1111)[0m         | [N] [33mBLOCKED[0m           | [N] [33mBLOCKED[0m           | [N] [33mBLOCKED[0m          
+a_agent@node2          | [M] [32mOK (1111)[0m         | [M] [32mOK (2222)[0m         | [S] [32mOK (3333)[0m         | [S] [32mOK (4444)[0m        
+b_issuer@node2         | [S] [32mOK (1111)[0m         | [S] [32mOK (2222)[0m         | [M] [32mOK (3333)[0m         | [M] [32mOK (4444)[0m        
+a_user3@node3          | [N] [33mBLOCKED[0m           | [M] [32mOK (2222)[0m         | [S] [32mOK (3333)[0m         | [S] [32mOK (4444)[0m        
+b_investor@node3       | [N] [33mBLOCKED[0m           | [S] [32mOK (2222)[0m         | [M] [32mOK (3333)[0m         | [M] [32mOK (4444)[0m        
+[1m
+=== Summary ===[0m
+  MEMBER reads succeeded:              8 / 8
+  SAME-NODE non-member reads succeeded: 8 / 8   [33m(node-level privacy — v1.0.0 allows this)[0m
+  NON-MEMBER-NODE reads blocked:        8 / 8   [32m(cryptographic isolation)[0m
+
+[1mInterpretation[0m
+  Paladin v1.0.0 enforces privacy at the node level.
+  Identities co-located on a member node share visibility of that group's state.
+  To isolate identities cryptographically today, deploy them on separate nodes.
+  See docs/03-multi-tenant-vision.md for deployment topologies.
+

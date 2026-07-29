@@ -1,0 +1,20 @@
+{
+  "name": "paladin-privacy-research-demo",
+  "version": "0.1.0",
+  "description": "Runnable demo that proves Paladin v1.0.0's privacy model on a live 3-node cluster",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node ./src/index.ts",
+    "start:prod": "node ./build/index.js"
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^22.8.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@lfdecentralizedtrust/paladin-sdk": "^1.0.0"
+  }
+}

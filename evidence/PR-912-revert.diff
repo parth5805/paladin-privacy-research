@@ -1,0 +1,308 @@
+diff --git a/core/go/internal/groupmgr/groupmgr_rpc_test.go b/core/go/internal/groupmgr/groupmgr_rpc_test.go
+index 964378a885..70c7c689ce 100644
+--- a/core/go/internal/groupmgr/groupmgr_rpc_test.go
++++ b/core/go/internal/groupmgr/groupmgr_rpc_test.go
+@@ -122,7 +122,7 @@ func TestPrivacyGroupRPCLifecycleRealDB(t *testing.T) {
+ 			mwpgt1.Return(&pldapi.TransactionInput{
+ 				TransactionBase: pldapi.TransactionBase{
+ 					Type: pldapi.TransactionTypePrivate.Enum(),
+-					From: `me@node1`,
++					From: `my.key`,
+ 					Data: pldtypes.RawJSON(`{"wrapped":"transaction"}`),
+ 				},
+ 			}, nil)
+@@ -133,7 +133,7 @@ func TestPrivacyGroupRPCLifecycleRealDB(t *testing.T) {
+ 			Return([]uuid.UUID{tx1ID}, nil).
+ 			Run(func(args mock.Arguments) {
+ 				tx := args[2].([]*pldapi.TransactionInput)[0]
+-				assert.Regexp(t, `me@node1`, tx.From)
++				assert.Regexp(t, `my.key`, tx.From)
+ 				assert.Equal(t, "pgtx_deploy", tx.IdempotencyKey)
+ 				assert.JSONEq(t, `{"wrapped":"transaction"}`, tx.Data.Pretty())
+ 			}).Once()
+@@ -236,7 +236,7 @@ func TestPrivacyGroupRPCLifecycleRealDB(t *testing.T) {
+ 		Group:          group.ID,
+ 		IdempotencyKey: "pgtx_deploy",
+ 		PrivacyGroupEVMTX: pldapi.PrivacyGroupEVMTX{
+-			From:     "me",
++			From:     "my.key",
+ 			To:       nil, // simulate is a deploy inside the privacy group
+ 			Function: &abi.Entry{Type: abi.Constructor, Inputs: abi.ParameterArray{{Type: "string", Name: "input1"}}},
+ 			Gas:      confutil.P(pldtypes.HexUint64(12345)),
+diff --git a/core/go/internal/groupmgr/manager.go b/core/go/internal/groupmgr/manager.go
+index 1ed9c05190..3a63a01f6a 100644
+--- a/core/go/internal/groupmgr/manager.go
++++ b/core/go/internal/groupmgr/manager.go
+@@ -514,28 +514,6 @@ func (gm *groupManager) prepareTransaction(ctx context.Context, dbTX persistence
+ 		return nil, i18n.NewError(ctx, msgs.MsgPGroupsNotReady, groupID, pg.GenesisTransaction)
+ 	}
+ 
+-	// Validate that the from identity is a member of the privacy group
+-	if pgTX.From != "" {
+-		// Resolve the from identity to fully qualified form
+-		identifier, node, err := pldtypes.PrivateIdentityLocator(pgTX.From).Validate(ctx, gm.transportManager.LocalNodeName(), false)
+-		if err != nil {
+-			return nil, i18n.WrapError(ctx, err, msgs.MsgTxMgrPublicSenderNotValidLocal, pgTX.From)
+-		}
+-		fullyQualifiedFrom := fmt.Sprintf("%s@%s", identifier, node)
+-
+-		isMember := false
+-		for _, member := range pg.Members {
+-			if member == fullyQualifiedFrom {
+-				isMember = true
+-				break
+-			}
+-		}
+-		if !isMember {
+-			return nil, i18n.NewError(ctx, msgs.MsgPGroupsFromNotMember, fullyQualifiedFrom, pg.ID)
+-		}
+-		pgTX.From = fullyQualifiedFrom
+-	}
+-
+ 	// Get the domain smart contract object from domain mgr
+ 	psc, err := gm.domainManager.GetSmartContractByAddress(ctx, dbTX, *pg.ContractAddress)
+ 	if err != nil {
+diff --git a/core/go/internal/groupmgr/manager_test.go b/core/go/internal/groupmgr/manager_test.go
+index 7dbbb4f113..d4a6e47a2b 100644
+--- a/core/go/internal/groupmgr/manager_test.go
++++ b/core/go/internal/groupmgr/manager_test.go
+@@ -606,79 +606,6 @@ func TestSendTransactionGroupGetContractFail(t *testing.T) {
+ 
+ }
+ 
+-func TestSendTransactionFromNotMember(t *testing.T) {
+-
+-	ctx, gm, mc, done := newTestGroupManager(t, false, &pldconf.GroupManagerConfig{}, mockEmptyMessageListeners)
+-	defer done()
+-
+-	schemaID := pldtypes.RandBytes32()
+-	groupID := pldtypes.RandBytes(32)
+-	contractAddr := pldtypes.RandAddress()
+-	// Group members do NOT include the from identity we will use
+-	mockDBPrivacyGroup(mc, schemaID, groupID, contractAddr, "me@node1", "you@node2")
+-
+-	_, err := gm.SendTransaction(ctx, gm.p.NOTX(), &pldapi.PrivacyGroupEVMTXInput{
+-		Domain: "domain1",
+-		Group:  groupID,
+-		PrivacyGroupEVMTX: pldapi.PrivacyGroupEVMTX{
+-			From: "them@node1",
+-		},
+-	})
+-	require.Regexp(t, "PD012524", err)
+-
+-}
+-
+-func TestCallFromNotMember(t *testing.T) {
+-
+-	ctx, gm, mc, done := newTestGroupManager(t, false, &pldconf.GroupManagerConfig{}, mockEmptyMessageListeners)
+-	defer done()
+-
+-	schemaID := pldtypes.RandBytes32()
+-	groupID := pldtypes.RandBytes(32)
+-	contractAddr := pldtypes.RandAddress()
+-	mockDBPrivacyGroup(mc, schemaID, groupID, contractAddr, "me@node1", "you@node2")
+-
+-	var res any
+-	err := gm.Call(ctx, gm.p.NOTX(), &res, &pldapi.PrivacyGroupEVMCall{
+-		Domain: "domain1",
+-		Group:  groupID,
+-		PrivacyGroupEVMTX: pldapi.PrivacyGroupEVMTX{
+-			From: "someone@node1",
+-		},
+-	})
+-	require.Regexp(t, "PD012524", err)
+-
+-}
+-
+-func TestSendTransactionFromValidMemberUnqualified(t *testing.T) {
+-
+-	ctx, gm, mc, done := newTestGroupManager(t, false, &pldconf.GroupManagerConfig{}, mockEmptyMessageListeners)
+-	defer done()
+-
+-	schemaID := pldtypes.RandBytes32()
+-	groupID := pldtypes.RandBytes(32)
+-	contractAddr := pldtypes.RandAddress()
+-	// Group members include "me@node1" - we'll test with unqualified "me"
+-	mockDBPrivacyGroup(mc, schemaID, groupID, contractAddr, "me@node1", "you@node2")
+-
+-	psc := componentsmocks.NewDomainSmartContract(t)
+-	mc.domainManager.On("GetSmartContractByAddress", mock.Anything, mock.Anything, *contractAddr).Return(psc, nil)
+-
+-	psc.On("WrapPrivacyGroupEVMTX", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&pldapi.TransactionInput{}, nil)
+-	mc.txManager.On("SendTransactions", mock.Anything, mock.Anything, mock.Anything).Return(nil, fmt.Errorf("pop"))
+-
+-	_, err := gm.SendTransaction(ctx, gm.p.NOTX(), &pldapi.PrivacyGroupEVMTXInput{
+-		Domain: "domain1",
+-		Group:  groupID,
+-		PrivacyGroupEVMTX: pldapi.PrivacyGroupEVMTX{
+-			From: "me", // Unqualified identity - should be resolved to "me@node1" and match
+-		},
+-	})
+-	// Should pass membership validation and fail at transaction sending (which is expected)
+-	require.Regexp(t, "pop", err)
+-
+-}
+-
+ func TestSendTransactionSendPreparedTx(t *testing.T) {
+ 
+ 	ctx, gm, mc, done := newTestGroupManager(t, false, &pldconf.GroupManagerConfig{}, mockEmptyMessageListeners)
+diff --git a/core/go/internal/msgs/en_errors.go b/core/go/internal/msgs/en_errors.go
+index da324d441c..0fdbdb67a6 100644
+--- a/core/go/internal/msgs/en_errors.go
++++ b/core/go/internal/msgs/en_errors.go
+@@ -501,5 +501,4 @@ var (
+ 	MsgPGroupsJSONRPCSubscriptionNack       = pde("PD012521", "JSON/RPC subscription '%s' returned nack for message batch")
+ 	MsgPGroupsGenesisSaltUnset              = pde("PD012522", "Genesis salt must be set")
+ 	MsgPGroupsReceivedGenesisInvalid        = pde("PD012523", "Received genesis state is invalid")
+-	MsgPGroupsFromNotMember                 = pde("PD012524", "From identity '%s' is not a member of privacy group '%s'")
+ )
+diff --git a/examples/privacy-storage/src/index.ts b/examples/privacy-storage/src/index.ts
+index 4ab75f0b49..5876ed4d63 100644
+--- a/examples/privacy-storage/src/index.ts
++++ b/examples/privacy-storage/src/index.ts
+@@ -35,16 +35,15 @@ async function main(): Promise<boolean> {
+   const clients = nodeConnections.map(node => new PaladinClient(node.clientOptions));
+   const [paladinNode1, paladinNode2, paladinNode3] = clients;
+ 
+-  const [memberNode1] = paladinNode1.getVerifiers(`member@${nodeConnections[0].id}`);
+-  const [memberNode2] = paladinNode2.getVerifiers(`member@${nodeConnections[1].id}`);
+-  const [outsiderNode1] = paladinNode1.getVerifiers(`outsider@${nodeConnections[0].id}`);
+-  const [outsiderNode3] = paladinNode3.getVerifiers(`outsider@${nodeConnections[2].id}`);
++  const [verifierNode1] = paladinNode1.getVerifiers(`member@${nodeConnections[0].id}`);
++  const [verifierNode2] = paladinNode2.getVerifiers(`member@${nodeConnections[1].id}`);
++  const [verifierNode3] = paladinNode3.getVerifiers(`outsider@${nodeConnections[2].id}`);
+ 
+   // Step 1: Create a privacy group for members
+-  logger.log("Creating a privacy group for member@node1 and member@node2...");
++  logger.log("Creating a privacy group for Node1 and Node2...");
+   const penteFactory = new PenteFactory(paladinNode1, "pente");
+   const memberPrivacyGroup = await penteFactory.newPrivacyGroup({
+-    members: [memberNode1, memberNode2],
++    members: [verifierNode1, verifierNode2],
+     evmVersion: "shanghai",
+     externalCallsEnabled: true,
+   }).waitForDeploy(DEFAULT_POLL_TIMEOUT);
+@@ -57,7 +56,7 @@ async function main(): Promise<boolean> {
+   const contractAddress = await memberPrivacyGroup.deploy({
+     abi: storageJson.abi,
+     bytecode: storageJson.bytecode,
+-    from: memberNode1.lookup,
++    from: verifierNode1.lookup,
+   }).waitForDeploy(DEFAULT_POLL_TIMEOUT);
+   if (!contractAddress) {
+     logger.error("Failed to deploy the contract. No address returned.");
+@@ -76,7 +75,7 @@ async function main(): Promise<boolean> {
+   const valueToStore = 125; // Example value to store
+   logger.log(`Storing a value "${valueToStore}" in the contract...`);
+   const storeReceipt = await privateStorageContract.sendTransaction({
+-    from: memberNode1.lookup,
++    from: verifierNode1.lookup,
+     function: "store",
+     data: { num: valueToStore },
+   }).waitForReceipt(DEFAULT_POLL_TIMEOUT);
+@@ -92,76 +91,58 @@ async function main(): Promise<boolean> {
+     storeReceipt?.transactionHash
+   );
+ 
+-  // Retrieve the value as member@node1
+-  logger.log("member@node1 retrieving the value from the contract...");
++  // Retrieve the value as Node1
++  logger.log("Node1 retrieving the value from the contract...");
+   const retrievedValueNode1 = await privateStorageContract.call({
+-    from: memberNode1.lookup,
++    from: verifierNode1.lookup,
+     function: "retrieve",
+   });
+   
+   // Validate the retrieved value
+   if (retrievedValueNode1["value"] !== valueToStore.toString()) {
+-    logger.error(`Value retrieval validation failed for member@node1! Expected: "${valueToStore}", Retrieved: "${retrievedValueNode1["value"]}"`);
++    logger.error(`Value retrieval validation failed for Node1! Expected: "${valueToStore}", Retrieved: "${retrievedValueNode1["value"]}"`);
+     return false;
+   }
+   
+   logger.log(
+-    "member@node1 retrieved the value successfully:",
++    "Node1 retrieved the value successfully:",
+     retrievedValueNode1["value"]
+   );
+ 
+-  // Retrieve the value as member@node2
+-  logger.log("member@node2 retrieving the value from the contract...");
++  // Retrieve the value as Node2
++  logger.log("Node2 retrieving the value from the contract...");
+   const retrievedValueNode2 = await privateStorageContract
+     .using(paladinNode2)
+     .call({
+-      from: memberNode2.lookup,
++      from: verifierNode2.lookup,
+       function: "retrieve",
+     });
+     
+   // Validate the retrieved value
+   if (retrievedValueNode2["value"] !== valueToStore.toString()) {
+-    logger.error(`Value retrieval validation failed for member@node2! Expected: "${valueToStore}", Retrieved: "${retrievedValueNode2["value"]}"`);
++    logger.error(`Value retrieval validation failed for Node2! Expected: "${valueToStore}", Retrieved: "${retrievedValueNode2["value"]}"`);
+     return false;
+   }
+   
+   logger.log(
+-    "member@node2 retrieved the value successfully:",
++    "Node2 retrieved the value successfully:",
+     retrievedValueNode2["value"]
+   );
+ 
+-
+-    // Attempt to retrieve the value as outsider@node1 (non-member on same node as a member)
+-    try {
+-      logger.log("outsider@node1 attempting to retrieve the value...");
+-      await privateStorageContract.using(paladinNode1).call({
+-        from: outsiderNode1.lookup,
+-        function: "retrieve",
+-      });
+-      logger.error(
+-        "outsider@node1 should not have access to the privacy group!"
+-      );
+-      return false;
+-    } catch (error) {
+-      logger.log(
+-        "outsider@node1 correctly denied access to the privacy group!"
+-      );
+-    }
+-
+-  // Attempt to retrieve the value as outsider@node3 (non-member on node with no members)
++  // Attempt to retrieve the value as Node3 (outsider)
+   try {
+-    logger.log("outsider@node3 attempting to retrieve the value...");
++    logger.log("Node3 (outsider) attempting to retrieve the value...");
+     await privateStorageContract.using(paladinNode3).call({
+-      from: outsiderNode3.lookup,
++      from: verifierNode3.lookup,
+       function: "retrieve",
+     });
+     logger.error(
+-      "outsider@node3 should not have access to the privacy group!"
++      "Node3 (outsider) should not have access to the privacy group!"
+     );
+     return false;
+   } catch (error) {
+     logger.log(
+-      "outsider@node3 correctly denied access to the privacy group!"
++      "Node3 (outsider) correctly denied access to the privacy group!"
+     );
+   }
+ 
+@@ -173,10 +154,9 @@ async function main(): Promise<boolean> {
+     retrievedValueNode1: retrievedValueNode1["value"],
+     retrievedValueNode2: retrievedValueNode2["value"],
+     storeTransactionHash: storeReceipt?.transactionHash,
+-    memberAtNode1Verifier: memberNode1.lookup,
+-    memberAtNode2Verifier: memberNode2.lookup,
+-    outsiderAtNode1Verifier: outsiderNode1.lookup,
+-    outsideAtNode3Verifier: outsiderNode3.lookup,
++    node1Verifier: verifierNode1.lookup,
++    node2Verifier: verifierNode2.lookup,
++    node3Verifier: verifierNode3.lookup,
+     timestamp: new Date().toISOString()
+   };
+ 

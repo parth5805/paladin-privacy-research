@@ -1,0 +1,74 @@
+Live run of demo/ against Paladin v1.0.0
+Date: 2026-07-29
+Cluster: Fresh Kind + Helm chart paladin-operator-1.0.0
+Image:   docker.io/lfdecentralizedtrust/paladin:v1.0.0
+
+Setup
+-----
+Three Paladin nodes, six identities distributed with cross-project co-tenancy:
+  node1: a_user1, a_user2                        (both Project A)
+  node2: a_agent, b_issuer                       (cross-project co-tenants)
+  node3: a_user3, b_investor                     (cross-project co-tenants)
+
+Four privacy groups created:
+  ProjectA-Group1  members: { a_user1@node1, a_agent@node2 }
+  ProjectA-Group2  members: { a_user3@node3, a_agent@node2 }
+  ProjectB-Group1  members: { b_issuer@node2, b_investor@node3 }
+  ProjectB-Group2  members: { b_issuer@node2, b_investor@node3 }
+
+Secrets written:
+  ProjectA-Group1 = 1111
+  ProjectA-Group2 = 2222
+  ProjectB-Group1 = 3333
+  ProjectB-Group2 = 4444
+
+Truth Table
+-----------
+Legend: [M] MEMBER  |  [S] SAME-NODE-AS-MEMBER  |  [N] NON-MEMBER-NODE
+Actual: OK (nnnn) = read succeeded returning secret nnnn, BLOCKED = read failed
+
+Identity               | ProjectA-Group1      | ProjectA-Group2      | ProjectB-Group1      | ProjectB-Group2
+-----------------------+----------------------+----------------------+----------------------+---------------------
+a_user1@node1          | [M] OK (1111)        | [N] BLOCKED          | [N] BLOCKED          | [N] BLOCKED
+a_user2@node1          | [S] OK (1111)        | [N] BLOCKED          | [N] BLOCKED          | [N] BLOCKED
+a_agent@node2          | [M] OK (1111)        | [M] OK (2222)        | [S] OK (3333)        | [S] OK (4444)
+b_issuer@node2         | [S] OK (1111)        | [S] OK (2222)        | [M] OK (3333)        | [M] OK (4444)
+a_user3@node3          | [N] BLOCKED          | [M] OK (2222)        | [S] OK (3333)        | [S] OK (4444)
+b_investor@node3       | [N] BLOCKED          | [S] OK (2222)        | [M] OK (3333)        | [M] OK (4444)
+
+Summary
+-------
+  MEMBER reads succeeded:              8 / 8
+  SAME-NODE non-member reads succeeded: 8 / 8   (node-level privacy — v1.0.0 allows this)
+  NON-MEMBER-NODE reads blocked:        8 / 8   (cryptographic isolation)
+
+BLOCKED errors observed:
+  PD012502: Privacy group '0x...' not found            (group's genesis never distributed to this node)
+  PD011206: DOMAIN pente returned error:               (group known to this node but contract state not replicated)
+    java.lang.IllegalArgumentException: no contract deployed at 0x...
+
+Both error codes are correct behaviour for non-member-node access.
+
+Cross-project visibility events (7 of 8 same-node reads are cross-project):
+  a_agent@node2 (Project A identity) read ProjectB-Group1 = 3333
+  a_agent@node2 (Project A identity) read ProjectB-Group2 = 4444
+  b_issuer@node2 (Project B identity) read ProjectA-Group1 = 1111
+  b_issuer@node2 (Project B identity) read ProjectA-Group2 = 2222
+  a_user3@node3 (Project A identity) read ProjectB-Group1 = 3333
+  a_user3@node3 (Project A identity) read ProjectB-Group2 = 4444
+  b_investor@node3 (Project B identity) read ProjectA-Group2 = 2222
+
+Interpretation
+--------------
+  Paladin v1.0.0 enforces privacy at the node level.
+  Identities co-located on a member node share visibility of that group's state.
+  To isolate identities cryptographically today, deploy them on separate nodes.
+  See docs/03-multi-tenant-vision.md for deployment topologies.
+
+Reproduction
+------------
+  cd demo
+  npm install
+  npm run start
+
+If your cluster is warm you should see the same truth table pattern in ~90 seconds.
