@@ -22,7 +22,7 @@ Reproducible proof at [evidence/live-run-truth-table.txt](evidence/live-run-trut
 | 2 | [History — how the privacy model evolved](docs/02-privacy-model-history.md) | The October 2025 → November 2025 story: what changed, why, and what the maintainers said about multi-tenancy. |
 | 3 | [The multi-tenant vision — "sub-blockchains under one blockchain"](docs/03-multi-tenant-vision.md) | Can one company run 10 projects on one Paladin/Besu with strong isolation? What's blocking it today, and what would need to change. |
 | 4 | [Paladin deep dive](docs/04-paladin-deep-dive.md) | Privacy group storage, ephemeral EVMs, event encryption, how many groups you can create, and what happens at scale. |
-| 5 | [Adoption planning discussion](docs/05-adoption-planning-discussion.md) | Meeting-ready discussion doc: shared vs dedicated infrastructure, application-owned BCP, a reference logical architecture, and where Paladin's roadmap needs to catch up. |
+| 5 | [Adoption planning](docs/05-adoption-planning-discussion.md) | Shared vs dedicated infrastructure, application-owned BCP, a reference logical architecture, and where Paladin's roadmap needs to catch up. |
 
 ## Diagrams (for slides / whiteboards)
 

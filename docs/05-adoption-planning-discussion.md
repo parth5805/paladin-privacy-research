@@ -1,28 +1,23 @@
-# Page 5 — Adoption Planning Discussion
+# Page 5 — Adoption Planning
 
-**Purpose:** discussion material for a pre-funding architecture review. This is *not* a decided design; it is a structured way to have four related conversations in one sitting.
-
-**Audience:** technical leadership plus one or two product / operations stakeholders. Anyone comfortable reading the earlier pages of this repo will follow this one.
-
-**Time to walk through:** ~45 minutes end-to-end. Each of the four agenda sections is ~10 minutes of discussion with a clear decision point at the end.
+Knowledge notes on four questions that come up when adopting Paladin at scale in an organisation that runs many independent projects on shared infrastructure.
 
 ---
 
 ## Contents
 
-- [Agenda 1 — Shared vs Dedicated Infrastructure (a repeatable choice)](#agenda-1--shared-vs-dedicated-infrastructure)
-- [Agenda 2 — Business-Continuity Resilience Must Be Application-Owned](#agenda-2--business-continuity-resilience-must-be-application-owned)
-- [Agenda 3 — A Potential Logical Architecture](#agenda-3--a-potential-logical-architecture)
-- [Agenda 4 — What Paladin Delivers Today vs Roadmap Gaps](#agenda-4--what-paladin-delivers-today-vs-roadmap-gaps)
-- [Meeting decision log template](#meeting-decision-log-template)
+1. [Shared vs Dedicated Infrastructure — a repeatable choice](#1-shared-vs-dedicated-infrastructure)
+2. [Business-Continuity Resilience Must Be Application-Owned](#2-business-continuity-resilience-must-be-application-owned)
+3. [A Potential Logical Architecture](#3-a-potential-logical-architecture)
+4. [Paladin Capability — Today vs Roadmap](#4-paladin-capability--today-vs-roadmap)
 
 ---
 
-## Agenda 1 — Shared vs Dedicated Infrastructure
+## 1. Shared vs Dedicated Infrastructure
 
-### The question we need to answer once and reuse
+### The question that needs a repeatable answer
 
-For every new project the organisation wants to run on the blockchain platform, someone has to answer:
+For every new project an organisation wants to run on the blockchain platform, someone has to answer:
 
 > Does this project run on the **shared** infrastructure (one Besu network, one operational team, one governance model) or does it get **dedicated** infrastructure (its own Besu network, its own operations, its own governance)?
 
@@ -106,21 +101,15 @@ Any team proposing a new project should answer these five questions in one page.
 2. What data will live in the private state? Is any of it subject to regulator or legal segregation?
 3. What is the required go-live date, and what is the acceptable range?
 4. Which existing projects (if any) must this project atomically interoperate with?
-5. Who owns the operational runbook and BCP procedures for this project? (See [Agenda 2](#agenda-2--business-continuity-resilience-must-be-application-owned).)
+5. Who owns the operational runbook and BCP procedures for this project? (See [section 2](#2-business-continuity-resilience-must-be-application-owned).)
 
 ### A note on cost intuition
 
-The infrastructure cost of a Paladin node is small — roughly 2 vCPU, 2 GB RAM, 20 GB storage per node, plus a Postgres. Even fully-dedicated Option C is affordable in absolute terms. The real cost multiplier of C is not compute; it is the ops team's cognitive load of running N independent stacks. If the platform team is small, that alone can make B or A the better answer.
-
-### Decision expected from this agenda
-
-- Agree the four decision axes and the tree above (or amend it).
-- Agree the intake questionnaire and where it lives.
-- Nominate a decision owner (platform architect) who signs off the choice for each new project using this framework.
+The infrastructure cost of a Paladin node is small — roughly 2 vCPU, 2 GB RAM, 20 GB storage per node, plus a Postgres. Even fully-dedicated Option C is affordable in absolute terms. The real cost multiplier of C is not compute; it is the operational cognitive load of running N independent stacks. If the platform team is small, that alone can make B or A the better answer.
 
 ---
 
-## Agenda 2 — Business-Continuity Resilience Must Be Application-Owned
+## 2. Business-Continuity Resilience Must Be Application-Owned
 
 ### The core insight
 
@@ -143,9 +132,9 @@ That means BCP for a blockchain-backed project cannot be handled purely by the i
 
 **The "all member nodes lost" case is the sharpest one for private data.** Because privacy = fewer copies, private group state exists only on member nodes. If every member node loses its DB simultaneously (rare but possible: a bad backup restore across the fleet, a regional outage combined with a mis-configured DR), the plaintext is unrecoverable. The base chain retains only opaque commitments; those cannot be reversed to plaintext without the pre-image, which was in the DBs you just lost.
 
-### Failure scenarios worth walking through in the meeting
+### Failure scenarios worth understanding
 
-For each scenario the room should agree: *who owns the runbook, and what does the fix look like?*
+For each scenario below the key question is: *who owns the runbook, and what does the fix look like?*
 
 1. **A single node in a 3-member group loses its DB.**
    Recovery: bring node back, resync state from peers, resume. No data loss. Infrastructure-owned.
@@ -163,7 +152,7 @@ For each scenario the room should agree: *who owns the runbook, and what does th
    Recovery: rotate keys, revoke the identity from the privacy group (requires re-creating the group with new membership since group membership is set at genesis), and issue compensating transactions to undo the writes' business effect.
 
 6. **One project's incident threatens to spill into another (e.g. shared base-chain congestion, shared operational team).**
-   Recovery: agenda 1's isolation choice determines the blast radius. Option A shares base chain; a Besu incident affects everyone. Option B / C limit it.
+   Recovery: the isolation choice from section 1 determines the blast radius. Option A shares base chain; a Besu incident affects everyone. Option B / C limit it.
 
 ### Application patterns that enable BCP
 
@@ -208,19 +197,13 @@ Each project deploys its contracts to its own privacy group(s). Contracts do not
 
 For projects where the "all-member-node-loss" scenario is a business-material risk, the application should periodically export critical state to an off-chain encrypted backup (e.g. object storage in a different failure domain). The backup must NOT weaken privacy — encrypt with keys managed only by the project, and never store plaintext outside member nodes.
 
-### Decision expected from this agenda
-
-- Agree that BCP requires application co-ownership (not infra-only).
-- Agree the five patterns above as organisational baseline for every project's contract design.
-- Nominate a BCP-review checkpoint in the project intake process (Agenda 1) — no project onboards without a BCP runbook.
-
 ---
 
-## Agenda 3 — A Potential Logical Architecture
+## 3. A Potential Logical Architecture
 
 ### Layered view
 
-The architecture that satisfies both Agendas 1 and 2 has four layers. Each layer has a single, clear owner.
+The architecture that satisfies both sections 1 and 2 has four layers. Each layer has a single, clear owner.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -254,7 +237,7 @@ The architecture that satisfies both Agendas 1 and 2 has four layers. Each layer
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### Deployment topology (hybrid, matching Agenda 1's default)
+### Deployment topology (hybrid, matching section 1's default)
 
 ```
                 Shared Hyperledger Besu (base chain)
@@ -282,14 +265,14 @@ node(s)       node(s)        node(s)         node(s)
                     - Common upgrade cadence for platform components
 ```
 
-### How this satisfies Agenda 1
+### How this satisfies section 1
 
 - Fast time-to-market: platform team pre-builds the Kubernetes templates, so a new project's Paladin nodes come up in a day.
 - Manageable complexity: platform layer is shared; application layer is owned per project.
 - Cost efficient: one Besu cluster, one K8s, one observability stack.
 - Privacy-respecting: cryptographic isolation between projects is achieved at the Paladin-node layer.
 
-### How this satisfies Agenda 2
+### How this satisfies section 2
 
 - Application layer owns compensating actions — the "undo" logic sits in each project's contracts.
 - Governance layer approves reversals — no single team can silently mutate state.
@@ -309,7 +292,7 @@ Project P privacy group members:
 All three receive state distribution for every P transaction.
 Any two can serve reads. Any two suffice for endorsement.
 Loss of any one is a routine recovery event (resync from peers).
-Loss of all three simultaneously = agenda 2 scenario (2) → off-Paladin backup.
+Loss of all three simultaneously = section 2 scenario (2) → off-Paladin backup.
 ```
 
 ### Governance layer (concrete)
@@ -329,18 +312,11 @@ The application contracts guard their state-changing sensitive functions with `o
 - **Alerting** — plugs into shared observability; alerts on failed endorsements, stalled transactions, unusual compensation frequency.
 - **Encrypted state backups** (optional per project) — dumps of critical private state to off-Paladin encrypted storage; keys held by the project's key custodian.
 
-### Decision expected from this agenda
-
-- Agree the four-layer model and its owners.
-- Agree the default hybrid topology from Agenda 1 as the reference architecture.
-- Agree the HA-per-project minimum of three member nodes across at least two failure domains.
-- Agree the governance-contract pattern as the mandatory guardrail for state mutations.
-
 ---
 
-## Agenda 4 — What Paladin Delivers Today vs Roadmap Gaps
+## 4. Paladin Capability — Today vs Roadmap
 
-For the architecture in Agenda 3 to work, we need certain things from Paladin. Some are available now in v1.0.0. Others are on the maintainers' roadmap. A few are things we would raise as feature requests.
+For the architecture in section 3 to work, certain things are needed from Paladin. Some are available now in v1.0.0. Others are on the maintainers' roadmap. A few are things worth raising as feature requests.
 
 ### What Paladin v1.0.0 gives us today (mapped to our architecture)
 
@@ -380,62 +356,16 @@ These are the areas where the roadmap would need to fill in for the architecture
 Priority list, based on what would most improve our architecture:
 
 1. **Sub-node privacy (confirmed on roadmap).** Track progress; contribute if we can.
-2. **Point-in-time state export API.** A canonical way to snapshot a privacy group's plaintext state to an application-controlled backup. Would materially simplify the BCP story in Agenda 2 scenario (2).
+2. **Point-in-time state export API.** A canonical way to snapshot a privacy group's plaintext state to an application-controlled backup. Would materially simplify the BCP story in section 2 scenario (2).
 3. **Per-tenant SLI / metrics standardisation.** Making it easier to run per-project SLOs on a shared Paladin fleet.
 4. **Reference compensating-action patterns.** Community-blessed Solidity patterns for governance-guarded reversals would help every adopter.
 5. **Guidance on cross-project selective disclosure.** Beyond the atomic swap example, a documented pattern for "share this one record with that other group" would be valuable.
 
 ### Risks specific to the "not yet possible" list
 
-- **If sub-node privacy slips further out**, the platform team may need to run a growing fleet of Paladin nodes. Manageable but a cost to track.
-- **If a project's BCP scenario (2) fires before we have a point-in-time snapshot API**, recovery depends entirely on the project's off-Paladin backups. Any project that doesn't own that risk explicitly should be flagged.
-- **If we ever attempt co-tenancy on a single node without sub-node privacy**, we are relying on our own API gateway for security. This is exactly the risk called out in [docs/03 Topology C](03-multi-tenant-vision.md#topology-c--one-paladin-node-per-organisation--api-gateway).
-
-### Decision expected from this agenda
-
-- Confirm the today/gap classification (add anything we've missed).
-- Prioritise the roadmap requests we want to raise with the Paladin community.
-- Identify who from our side will engage with the Paladin project (via issues, Discord, or contribution).
-- Agree tolerance: which gaps are we willing to live with, and which are showstoppers for early projects?
-
----
-
-## Meeting decision log template
-
-Please capture decisions here during the meeting so we have a single artefact to distribute.
-
-### Agenda 1 decisions
-
-- [ ] Decision framework and axes agreed / amended? → …
-- [ ] Repeatable decision tree adopted (yes / with changes)? → …
-- [ ] Intake questionnaire owner and location? → …
-- [ ] Nominated decision owner (platform architect)? → …
-
-### Agenda 2 decisions
-
-- [ ] BCP is application co-owned (agreed)? → …
-- [ ] Five application patterns adopted as baseline? → …
-- [ ] Project intake requires a BCP runbook? → …
-
-### Agenda 3 decisions
-
-- [ ] Four-layer model and owners agreed? → …
-- [ ] Hybrid topology (shared Besu, per-project Paladin) as reference? → …
-- [ ] HA minimum of 3 member nodes across ≥2 failure domains? → …
-- [ ] Governance contract mandatory guardrail? → …
-
-### Agenda 4 decisions
-
-- [ ] Today/gap classification agreed? → …
-- [ ] Top three roadmap items to raise with Paladin community? → …
-- [ ] Community engagement owner? → …
-- [ ] Any gap that is a showstopper for the first project? → …
-
-### Open questions / follow-ups
-
-1. …
-2. …
-3. …
+- **If sub-node privacy slips further out**, the platform layer may need to run a growing fleet of Paladin nodes. Manageable but a cost to track.
+- **If a project's BCP scenario (2) fires before a point-in-time snapshot API exists**, recovery depends entirely on the project's off-Paladin backups. Any project that doesn't own that risk explicitly should flag it as a design consideration.
+- **If co-tenancy on a single node is attempted without sub-node privacy**, isolation depends entirely on an application-layer gateway. This is exactly the risk called out in [Topology C on page 3](03-multi-tenant-vision.md#topology-c--one-paladin-node-per-organisation--api-gateway).
 
 ---
 
