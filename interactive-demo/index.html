@@ -953,7 +953,9 @@
             <span class="legend-item"><span class="legend-square" style="background:rgba(164,139,255,0.15); border: 1px solid var(--pg-c);"></span> Privacy group (Pente)</span>
             <span class="legend-item"><span class="legend-dot" style="background:var(--paladin-c);color:var(--paladin-c);"></span> Paladin node</span>
             <span class="legend-item"><span class="legend-square" style="background:rgba(255,181,69,0.15); border: 1px solid var(--besu-c);"></span> Shared Besu (base chain)</span>
-            <span class="legend-item"><span style="width:20px;height:2px;background:var(--text-dim);display:inline-block;"></span> Membership / RPC</span>
+            <span class="legend-item"><span style="padding:1px 5px;border:1px solid var(--pg-c);border-radius:6px;font-family:ui-monospace,monospace;font-size:9px;color:var(--pg-c);">member</span> PG ↔ Paladin</span>
+            <span class="legend-item"><span style="padding:1px 5px;border:1px solid var(--paladin-c);border-radius:6px;font-family:ui-monospace,monospace;font-size:9px;color:var(--paladin-c);">JSON-RPC</span> Paladin ↔ Besu</span>
+            <span class="legend-item"><span style="padding:1px 5px;border:1px solid var(--besu-c);border-radius:6px;font-family:ui-monospace,monospace;font-size:9px;color:var(--besu-c);">QBFT · P2P</span> Besu consensus</span>
           </div>
         </div>
 
@@ -1700,36 +1702,53 @@ function renderNetwork() {
     `);
   });
 
-  // Draw Paladin -> Besu connection lines (each Paladin node down to the Besu band midpoint)
-  const besuBandCY = besuNodes.length > 0 ? besuNodes[0].y : LAYER.besu.yTop + 80;
+  // Draw Paladin -> Besu connection lines. Each carries a "JSON-RPC" label
+  // near its start so the diagram is self-documenting.
   paladinNodes.forEach(pn => {
-    // Bezier down to the vertical center of the Besu band, offset x = pn.x
     const yTarget = LAYER.besu.yTop + 20;
     parts.push(`
       <path d="M${pn.x},${pn.y + 14} C${pn.x},${(pn.y + yTarget) / 2 + 20} ${pn.x},${(pn.y + yTarget) / 2 - 20} ${pn.x},${yTarget}"
             fill="none" stroke="${pn.color}" stroke-opacity="0.28" stroke-width="1.2"/>
+      <g transform="translate(${pn.x} ${pn.y + 40})" pointer-events="none">
+        <rect x="-30" y="-7" width="60" height="14" rx="7" fill="#131a2b" stroke="${pn.color}" stroke-opacity="0.45" stroke-width="0.8"/>
+        <text x="0" y="3" font-size="8.5" text-anchor="middle" fill="${pn.color}" opacity="0.9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">JSON-RPC</text>
+      </g>
     `);
   });
 
-  // Draw PG cards -> member nodes lines
+  // Draw PG cards -> member nodes lines, labelled "member" so the
+  // relationship (semantic, not wire) is self-evident.
   pgCards.forEach(card => {
     const g = card.group;
-    g.members.forEach(mem => {
+    const membersToLabel = g.members.length;
+    g.members.forEach((mem, mi) => {
       const p = findProject(mem.projectId);
       if (!p) return;
       const pn = paladinNodes.find(x => x.projectId === mem.projectId && x.idx === mem.nodeIndex);
       if (!pn) return;
       const isCross = isCrossProjectGroup(g);
       const color = isCross ? '#00d4a7' : '#a48bff';
-      // curve from card bottom-center to node top
       const startX = card.cx;
       const startY = card.y + card.h;
       const endX = pn.x;
       const endY = pn.y - 14;
       const midY = (startY + endY) / 2;
+      // Curve
       parts.push(`
         <path d="M${startX},${startY} C${startX},${midY} ${endX},${midY} ${endX},${endY}"
               fill="none" stroke="${color}" stroke-opacity="0.5" stroke-width="1.3"/>
+      `);
+      // Protocol/relationship label — position along the curve, staggered so
+      // multiple sibling lines don't stack labels on top of each other.
+      const labelT = 0.35 + (mi / Math.max(1, membersToLabel - 1)) * 0.3; // 0.35..0.65
+      // Approximate a cubic bezier midpoint by linear interp of the two control-hull endpoints.
+      const bx = startX + (endX - startX) * labelT;
+      const by = startY + (endY - startY) * labelT - 8; // lift slightly above the line
+      parts.push(`
+        <g transform="translate(${bx} ${by})" pointer-events="none">
+          <rect x="-24" y="-7" width="48" height="14" rx="7" fill="#131a2b" stroke="${color}" stroke-opacity="0.55" stroke-width="0.8"/>
+          <text x="0" y="3" font-size="8.5" text-anchor="middle" fill="${color}" opacity="0.95" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">member</text>
+        </g>
       `);
     });
   });
@@ -1830,8 +1849,8 @@ function renderNetwork() {
     `);
   });
 
-  // Draw the Besu chain FIRST: connecting rails + block indicators between
-  // adjacent validators so it visibly reads as a blockchain, not a floating row.
+  // Draw the Besu chain FIRST: connecting rails + block indicators + protocol
+  // label between adjacent validators.
   for (let i = 0; i < besuNodes.length - 1; i++) {
     const a = besuNodes[i], b = besuNodes[i + 1];
     const midX = (a.x + b.x) / 2;
@@ -1846,6 +1865,10 @@ function renderNetwork() {
       <g transform="translate(${midX} ${midY}) rotate(45)">
         <rect x="-5" y="-5" width="10" height="10" rx="1.5"
               fill="#1a1408" stroke="#ffb545" stroke-width="1.2" stroke-opacity="0.65"/>
+      </g>
+      <g transform="translate(${midX} ${midY - 22})" pointer-events="none">
+        <rect x="-24" y="-7" width="48" height="14" rx="7" fill="#131a2b" stroke="#ffb545" stroke-opacity="0.45" stroke-width="0.8"/>
+        <text x="0" y="3" font-size="8.5" text-anchor="middle" fill="#ffb545" opacity="0.9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">QBFT · P2P</text>
       </g>
     `);
   }
@@ -2327,14 +2350,14 @@ function addProject() {
     id: generateId('p'),
     name: `Project ${String.fromCharCode(64 + idx)}`,
     color: PROJECT_COLORS[(idx - 1) % PROJECT_COLORS.length],
-    paladinNodes: 2,
-    identities: [['user'], ['user']],
+    paladinNodes: 3,
+    identities: [['user'], ['user'], ['user']],
   };
   state.projects.push(p);
   state.selectedProjectId = p.id;
   state.selection = { kind: null };
   save(); renderAll();
-  toast(`Added ${p.name} with 2 Paladin nodes`);
+  toast(`Added ${p.name} with 3 Paladin nodes`);
 }
 
 /* Identity accessors */
