@@ -1012,6 +1012,11 @@
               <div class="callout-title">Important limit today</div>
               Sub-node isolation (multiple tenants sharing one Paladin node with cryptographic separation) is on the roadmap, not shipped. Today the isolation unit is the Paladin node. Any identity resolvable on a member node can read/write the group's state.
             </div>
+
+            <div class="callout success">
+              <div class="callout-title">Cross-project privacy groups are real Paladin</div>
+              In Paladin, a privacy group is just a list of <code style="color:var(--text);">identity@node</code> locators. Nothing in the protocol restricts members to a single project — "project" is our organisational concept, not Paladin's. A group can freely include <code style="color:var(--text);">alice@projA-p1</code> and <code style="color:var(--text);">bob@projB-p2</code> together. Try the <b>+ Cross-project privacy group</b> button on the left to create one, then inspect it — the group card marks it <b>CROSS-PROJECT</b> and its member chips show the mixed origins.
+            </div>
           </div>
 
           <div class="tab-panel" data-panel="matrix">
@@ -1324,7 +1329,7 @@
 /* =============================================================================
    State
    ============================================================================= */
-const LS_KEY = 'sharedchain-demo-v3';
+const LS_KEY = 'sharedchain-demo-v4';
 const PROJECT_COLORS = ['#4d7cfe', '#7c5cff', '#00d4a7', '#ffb545', '#ff5c7a', '#5cb8ff', '#ff8a5c', '#c05cff'];
 const RPC_REGIONS = ['prod', 'core', 'edge', 'main', 'live', 'primary', 'us1', 'eu1', 'ap1'];
 
@@ -1334,14 +1339,17 @@ const DEFAULT_STATE = () => ({
   besu: { faultTolerance: 2 },
   projects: [{
     id: 'p1', name: 'Project A', color: PROJECT_COLORS[0], paladinNodes: 3,
+    // Identities hosted per Paladin node (parallel array indexed by node)
+    identities: [['user'], ['user'], ['user']],
   }],
-  // Privacy groups are now top-level; members can span multiple projects
+  // Privacy groups are top-level; members are identity@node references,
+  // which can span multiple projects (real Paladin behaviour).
   privacyGroups: [{
     id: 'g1', name: 'Group-1',
     members: [
-      { projectId: 'p1', nodeIndex: 0 },
-      { projectId: 'p1', nodeIndex: 1 },
-      { projectId: 'p1', nodeIndex: 2 },
+      { projectId: 'p1', nodeIndex: 0, identity: 'user' },
+      { projectId: 'p1', nodeIndex: 1, identity: 'user' },
+      { projectId: 'p1', nodeIndex: 2, identity: 'user' },
     ],
     contracts: [], transactions: [],
   }],
@@ -1362,11 +1370,11 @@ function load() {
     if (!state.selection) state.selection = { kind: null };
     if (!state.privacyGroups) state.privacyGroups = [];
     if (!state.view) state.view = { zoom: 1, panX: 0, panY: 0 };
-    // Migration: if old projects[].privacyGroups exist, lift them
+    // Migration: lift old projects[].privacyGroups
     state.projects.forEach(p => {
       if (p.privacyGroups) {
         p.privacyGroups.forEach(g => {
-          const members = (g.memberNodeIndices || []).map(idx => ({ projectId: p.id, nodeIndex: idx }));
+          const members = (g.memberNodeIndices || []).map(idx => ({ projectId: p.id, nodeIndex: idx, identity: 'user' }));
           state.privacyGroups.push({
             id: g.id, name: g.name, members,
             contracts: g.contracts || [], transactions: g.transactions || [],
@@ -1375,11 +1383,21 @@ function load() {
         delete p.privacyGroups;
       }
     });
-    // Ensure fields
+    // Migration: ensure projects have identities arrays sized to their node count
+    state.projects.forEach(p => {
+      if (!Array.isArray(p.identities)) p.identities = [];
+      while (p.identities.length < p.paladinNodes) p.identities.push(['user']);
+      p.identities = p.identities.slice(0, p.paladinNodes);
+      p.identities.forEach((arr, i) => {
+        if (!Array.isArray(arr) || arr.length === 0) p.identities[i] = ['user'];
+      });
+    });
+    // Migration: ensure members have identity field
     state.privacyGroups.forEach(g => {
       if (!g.contracts) g.contracts = [];
       if (!g.transactions) g.transactions = [];
       if (!g.members) g.members = [];
+      g.members.forEach(m => { if (!m.identity) m.identity = 'user'; });
     });
   } catch(e) { state = DEFAULT_STATE(); }
 }
@@ -1735,16 +1753,17 @@ function renderNetwork() {
         <text x="${card.x + 14}" y="${card.y + 54}" fill="#8a94ad" font-size="10" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, sans-serif" letter-spacing="0.5">MEMBERS · ${g.members.length}</text>
     `);
 
-    // Member chips (up to 4 shown, rest = "+n more")
+    // Member chips (up to 4 shown, rest = "+n more"). Format: identity@node
     const shown = g.members.slice(0, 4);
     shown.forEach((mem, mi) => {
       const p = findProject(mem.projectId);
       if (!p) return;
       const chipY = card.y + 66 + mi * 22;
+      const label = `${mem.identity}@${projectSlug(p)}-p${mem.nodeIndex + 1}`;
       parts.push(`
         <rect x="${card.x + 14}" y="${chipY}" width="${card.w - 28}" height="18" rx="9" fill="${p.color}" fill-opacity="0.12" stroke="${p.color}" stroke-opacity="0.5"/>
         <circle cx="${card.x + 24}" cy="${chipY + 9}" r="4" fill="${p.color}"/>
-        <text x="${card.x + 34}" y="${chipY + 12}" fill="#e6e9f2" font-size="10" font-family="ui-monospace, monospace">${escapeHtml(paladinNodeName(p, mem.nodeIndex))}</text>
+        <text x="${card.x + 34}" y="${chipY + 12}" fill="#e6e9f2" font-size="10" font-family="ui-monospace, monospace">${escapeHtml(label)}</text>
       `);
     });
     if (g.members.length > 4) {
@@ -1785,31 +1804,38 @@ function renderNetwork() {
     `);
   });
 
-  // Draw Paladin nodes (big, labeled)
+  // Draw Paladin nodes. No long name below (caused overlap) — visible p1/p2 on
+  // the node, identity-count badge to top-right, full name available on hover
+  // and in the inspector on click.
   paladinNodes.forEach(pn => {
+    const p = findProject(pn.projectId);
+    const idCount = getIdentities(p, pn.idx).length;
+    const fullName = paladinNodeName(p, pn.idx);
     parts.push(`
       <g class="svg-node" data-node-id="${pn.id}">
-        <circle cx="${pn.x}" cy="${pn.y}" r="18" fill="url(#glow-paladin)"/>
-        <circle cx="${pn.x}" cy="${pn.y}" r="12" fill="${pn.color}" filter="url(#soft-glow)"/>
-        <circle cx="${pn.x}" cy="${pn.y}" r="12" fill="${pn.color}"/>
-        <circle cx="${pn.x}" cy="${pn.y}" r="5" fill="#0a0e1a" opacity="0.5"/>
-        <text x="${pn.x}" y="${pn.y + 3}" fill="white" font-size="10" font-weight="700" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif">p${pn.idx + 1}</text>
-        <text x="${pn.x}" y="${pn.y + 32}" fill="${pn.color}" font-size="10" text-anchor="middle" font-family="ui-monospace, monospace">${paladinNodeName(findProject(pn.projectId), pn.idx)}</text>
-        <title>Paladin node · ${paladinNodeName(findProject(pn.projectId), pn.idx)}</title>
+        <circle cx="${pn.x}" cy="${pn.y}" r="20" fill="url(#glow-paladin)"/>
+        <circle cx="${pn.x}" cy="${pn.y}" r="14" fill="${pn.color}" filter="url(#soft-glow)"/>
+        <circle cx="${pn.x}" cy="${pn.y}" r="14" fill="${pn.color}"/>
+        <circle cx="${pn.x}" cy="${pn.y}" r="6" fill="#0a0e1a" opacity="0.55"/>
+        <text x="${pn.x}" y="${pn.y + 4}" fill="white" font-size="11" font-weight="700" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif">p${pn.idx + 1}</text>
+        ${idCount > 1 ? `
+          <circle cx="${pn.x + 14}" cy="${pn.y - 12}" r="8" fill="#0a0e1a" stroke="${pn.color}" stroke-width="1.5"/>
+          <text x="${pn.x + 14}" y="${pn.y - 9}" fill="${pn.color}" font-size="9" font-weight="700" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif">${idCount}</text>
+        ` : ''}
+        <title>${fullName} · ${idCount} identit${idCount === 1 ? 'y' : 'ies'}</title>
       </g>
     `);
   });
 
-  // Draw Besu nodes with labels
+  // Draw Besu nodes. Same treatment — clean, no name overlap, tooltip has full.
   besuNodes.forEach((b, i) => {
     parts.push(`
       <g class="svg-besu-node" data-besu-id="${b.id}">
-        <circle cx="${b.x}" cy="${b.y}" r="18" fill="url(#glow-besu)"/>
-        <circle cx="${b.x}" cy="${b.y}" r="12" fill="#ffb545" filter="url(#soft-glow)"/>
-        <circle cx="${b.x}" cy="${b.y}" r="12" fill="#ffb545"/>
-        <circle cx="${b.x}" cy="${b.y}" r="5" fill="#1a1408" opacity="0.5"/>
-        <text x="${b.x}" y="${b.y + 3}" fill="white" font-size="10" font-weight="700" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif">v${i + 1}</text>
-        <text x="${b.x}" y="${b.y + 32}" fill="#ffb545" font-size="10" text-anchor="middle" font-family="ui-monospace, monospace">${b.name}</text>
+        <circle cx="${b.x}" cy="${b.y}" r="20" fill="url(#glow-besu)"/>
+        <circle cx="${b.x}" cy="${b.y}" r="14" fill="#ffb545" filter="url(#soft-glow)"/>
+        <circle cx="${b.x}" cy="${b.y}" r="14" fill="#ffb545"/>
+        <circle cx="${b.x}" cy="${b.y}" r="6" fill="#1a1408" opacity="0.55"/>
+        <text x="${b.x}" y="${b.y + 4}" fill="white" font-size="11" font-weight="700" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif">v${i + 1}</text>
         <title>Besu validator · ${b.name}</title>
       </g>
     `);
@@ -1852,16 +1878,76 @@ function applyViewTransform() {
   const zv = document.getElementById('zoom-val');
   if (zv) zv.textContent = Math.round(z * 100) + '%';
 }
-function zoomBy(factor, cx, cy) {
-  const newZ = Math.max(0.4, Math.min(3, state.view.zoom * factor));
+function clampZoom(z) { return Math.max(0.4, Math.min(3, z)); }
+function currentViewBox() {
+  const z = state.view.zoom;
+  const w = NET_W / z, h = NET_H / z;
+  const x = (NET_W - w) / 2 + state.view.panX;
+  const y = (NET_H - h) / 2 + state.view.panY;
+  return { x, y, w, h, z };
+}
+// Zoom around the SVG coordinate (svgX, svgY) so that point stays fixed under the pointer
+function zoomAroundSvgPoint(factor, svgX, svgY, viewportRatioX, viewportRatioY) {
+  const oldZ = state.view.zoom;
+  const newZ = clampZoom(oldZ * factor);
+  if (newZ === oldZ) return;
+  const newW = NET_W / newZ, newH = NET_H / newZ;
+  // We want: newX + viewportRatioX * newW = svgX  ⇒  newX = svgX - viewportRatioX * newW
+  const newX = svgX - viewportRatioX * newW;
+  const newY = svgY - viewportRatioY * newH;
   state.view.zoom = newZ;
-  save();
+  state.view.panX = newX - (NET_W - newW) / 2;
+  state.view.panY = newY - (NET_H - newH) / 2;
   applyViewTransform();
+}
+// Zoom around a client (mouse) point
+function zoomAtClient(factor, clientX, clientY) {
+  const svg = document.getElementById('network');
+  const rect = svg.getBoundingClientRect();
+  const rx = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  const ry = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+  const vb = currentViewBox();
+  const svgX = vb.x + rx * vb.w;
+  const svgY = vb.y + ry * vb.h;
+  zoomAroundSvgPoint(factor, svgX, svgY, rx, ry);
+}
+// Zoom around the center of the viewport (used by +/- buttons)
+function zoomCenter(factor) {
+  const vb = currentViewBox();
+  const svgX = vb.x + vb.w / 2;
+  const svgY = vb.y + vb.h / 2;
+  zoomAroundSvgPoint(factor, svgX, svgY, 0.5, 0.5);
+  save();
 }
 function resetView() {
   state.view = { zoom: 1, panX: 0, panY: 0 };
   save();
   applyViewTransform();
+}
+
+// ---- Smooth wheel zoom -------------------------------------------------------
+// Trackpads fire many small deltaY events per gesture; a fixed 12% per event
+// zooms far too fast. Use exponential mapping so small deltas → tiny zoom,
+// large deltas → larger zoom. Also rAF-throttle to one apply per frame.
+let wheelPending = null;
+function scheduleWheelZoom(deltaY, clientX, clientY) {
+  if (wheelPending) {
+    wheelPending.dy += deltaY;
+    wheelPending.cx = clientX;
+    wheelPending.cy = clientY;
+    return;
+  }
+  wheelPending = { dy: deltaY, cx: clientX, cy: clientY };
+  requestAnimationFrame(() => {
+    const p = wheelPending;
+    wheelPending = null;
+    // Tunable: 0.0015 gives a gentle, natural feel on both trackpad and mouse.
+    // Cap the per-frame delta so a violent scroll doesn't jump absurdly.
+    const dy = Math.max(-400, Math.min(400, p.dy));
+    const factor = Math.exp(-dy * 0.0015);
+    zoomAtClient(factor, p.cx, p.cy);
+    save();
+  });
 }
 
 /* =============================================================================
@@ -1984,6 +2070,25 @@ function renderNodeInspector() {
       <div class="rpc-endpoint"><span class="label">P2P transport</span><span class="val">grpc://${base}:9000</span><span class="copy" data-copy-text="grpc-${base}">⧉</span></div>
     </div>
     <div class="inspector-section">
+      <div class="inspector-section-head">
+        <span>Identities hosted on this node (${getIdentities(project, idx).length})</span>
+        <button class="btn btn-sm" id="add-identity-btn">+ Add</button>
+      </div>
+      <div>
+        ${getIdentities(project, idx).map(id => `
+          <span class="member-chip" style="border-color: ${project.color}; background: ${project.color}22;">
+            <span class="avatar" style="background: ${project.color};">${(id[0] || '?').toUpperCase()}</span>
+            <span style="color: var(--text);">${escapeHtml(id)}</span><span style="color: var(--text-dim);">@</span><span style="color: var(--text-muted);">${escapeHtml(paladinNodeName(project, idx))}</span>
+            ${getIdentities(project, idx).length > 1 ? `<button class="pg-remove" data-remove-id="${escapeHtml(id)}" style="margin-left: 4px; color: var(--text-dim); background: none; border: none; cursor: pointer;">×</button>` : ''}
+          </span>
+        `).join('')}
+      </div>
+      <div class="quiet" style="margin-top: 6px; font-size: 10.5px;">
+        In Paladin, an <b>identity</b> like <code style="color:var(--text);">alice@${projectSlug(project)}-p${idx+1}</code> is a key the node can sign for. Identities on this node share the node's stored state — that's why isolation happens at the node level, not identity level.
+      </div>
+    </div>
+
+    <div class="inspector-section">
       <div class="inspector-section-head">Member of ${memberOf.length} privacy group(s)</div>
       ${memberOf.length === 0 ? '<div class="quiet">Not a member of any group yet</div>' :
         memberOf.map(g => {
@@ -2019,6 +2124,11 @@ function renderNodeInspector() {
       );
     });
   });
+  const addBtn = body.querySelector('#add-identity-btn');
+  if (addBtn) addBtn.addEventListener('click', () => addIdentity(projectId, idx));
+  body.querySelectorAll('[data-remove-id]').forEach(el => {
+    el.addEventListener('click', e => { e.stopPropagation(); removeIdentity(projectId, idx, el.dataset.removeId); });
+  });
 }
 
 function renderGroupInspector() {
@@ -2030,46 +2140,49 @@ function renderGroupInspector() {
 
   title.innerHTML = `<span class="pill" style="${cross ? 'background: rgba(0,212,167,0.2); color: var(--success);' : ''}">${cross ? 'Cross-Project PG' : 'Privacy Group'}</span> <span>${escapeHtml(g.name)}</span> <span class="quiet" style="font-family: ui-monospace, monospace; font-size: 10.5px;">${abbr(g.id, 3)}</span>`;
 
-  const membersByProject = {};
-  g.members.forEach(m => {
-    if (!membersByProject[m.projectId]) membersByProject[m.projectId] = [];
-    membersByProject[m.projectId].push(m.nodeIndex);
-  });
+  const projectIdsInGroup = new Set(g.members.map(m => m.projectId));
 
   body.innerHTML = `
     <div class="inspector-section">
-      <div class="inspector-section-head">Members (${g.members.length}) ${cross ? '<span style="color: var(--success); font-size: 9px;">SPANS ' + Object.keys(membersByProject).length + ' PROJECTS</span>' : ''}</div>
+      <div class="inspector-section-head">Members (${g.members.length}) ${cross ? `<span style="color: var(--success); font-size: 9px;">SPANS ${projectIdsInGroup.size} PROJECTS</span>` : ''}</div>
       <div>
-        ${Object.entries(membersByProject).map(([pid, idxs]) => {
-          const p = findProject(pid);
+        ${g.members.map(m => {
+          const p = findProject(m.projectId);
           if (!p) return '';
-          return idxs.map(i => `
+          return `
             <span class="member-chip">
-              <span class="avatar" style="background: ${p.color};">${p.name[8] || p.name[0]}</span>
-              ${escapeHtml(paladinNodeName(p, i))}
+              <span class="avatar" style="background: ${p.color};">${(p.name.match(/[A-Z]/) || ['P'])[0]}</span>
+              <span style="color: var(--text);">${escapeHtml(m.identity)}</span><span style="color: var(--text-dim);">@</span><span>${escapeHtml(paladinNodeName(p, m.nodeIndex))}</span>
             </span>
-          `).join('');
+          `;
         }).join('')}
       </div>
       <div class="quiet" style="margin-top: 8px; font-size: 10.5px;">
-        Base-chain contract: <span style="font-family: ui-monospace, monospace;">${abbr(shortAddrDeterministic(g.id), 4)}</span>
+        Members are <b>identity@node</b> locators. In Paladin any node can be part of a group with any other node — projects are our concept, not Paladin's. Base-chain contract: <span style="font-family: ui-monospace, monospace;">${abbr(shortAddrDeterministic(g.id), 4)}</span>
       </div>
-      <div style="margin-top: 8px;">
-        <div class="inspector-section-head" style="margin-bottom: 4px;">Toggle membership</div>
+      <div style="margin-top: 10px;">
+        <div class="inspector-section-head" style="margin-bottom: 4px;">Toggle identity membership</div>
         <div class="member-picker">
           ${state.projects.map(p => {
-            const memberIdxs = new Set(g.members.filter(m => m.projectId === p.id).map(m => m.nodeIndex));
             return `
               <div class="picker-project">
                 <div class="picker-project-name" style="color: ${p.color};">${escapeHtml(p.name)}</div>
-                <div class="picker-nodes">
-                  ${Array.from({ length: p.paladinNodes }, (_, i) => {
-                    const on = memberIdxs.has(i);
-                    return `<button class="picker-node ${on ? 'on' : ''}" data-toggle-pid="${p.id}" data-toggle-idx="${i}">
-                      <span class="dot" style="background: ${p.color};"></span>p${i + 1}
-                    </button>`;
-                  }).join('')}
-                </div>
+                ${Array.from({ length: p.paladinNodes }, (_, i) => {
+                  const ids = getIdentities(p, i);
+                  return `
+                    <div style="margin-bottom: 5px;">
+                      <div style="font-size: 10px; color: var(--text-dim); font-family: ui-monospace, monospace; margin-bottom: 3px;">${escapeHtml(paladinNodeName(p, i))}</div>
+                      <div class="picker-nodes">
+                        ${ids.map(id => {
+                          const on = g.members.some(m => m.projectId === p.id && m.nodeIndex === i && m.identity === id);
+                          return `<button class="picker-node ${on ? 'on' : ''}" data-tid-pid="${p.id}" data-tid-idx="${i}" data-tid-id="${escapeHtml(id)}">
+                            <span class="dot" style="background: ${p.color};"></span>${escapeHtml(id)}
+                          </button>`;
+                        }).join('')}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
               </div>
             `;
           }).join('')}
@@ -2160,8 +2273,8 @@ function renderGroupInspector() {
     </div>
   `;
 
-  body.querySelectorAll('[data-toggle-pid]').forEach(el => {
-    el.addEventListener('click', () => toggleMember(g.id, el.dataset.togglePid, parseInt(el.dataset.toggleIdx, 10)));
+  body.querySelectorAll('[data-tid-pid]').forEach(el => {
+    el.addEventListener('click', () => toggleMember(g.id, el.dataset.tidPid, parseInt(el.dataset.tidIdx, 10), el.dataset.tidId));
   });
   const dep = body.querySelector('#deploy-contract-btn');
   if (dep) dep.addEventListener('click', () => deployContract(g.id));
@@ -2190,12 +2303,55 @@ function addProject() {
     name: `Project ${String.fromCharCode(64 + idx)}`,
     color: PROJECT_COLORS[(idx - 1) % PROJECT_COLORS.length],
     paladinNodes: 2,
+    identities: [['user'], ['user']],
   };
   state.projects.push(p);
   state.selectedProjectId = p.id;
   state.selection = { kind: null };
   save(); renderAll();
   toast(`Added ${p.name} with 2 Paladin nodes`);
+}
+
+/* Identity accessors */
+function getIdentities(project, nodeIdx) {
+  if (!project || !Array.isArray(project.identities)) return ['user'];
+  const arr = project.identities[nodeIdx];
+  return Array.isArray(arr) && arr.length > 0 ? arr : ['user'];
+}
+function addIdentity(projectId, nodeIdx) {
+  const p = findProject(projectId);
+  if (!p) return;
+  if (!p.identities[nodeIdx]) p.identities[nodeIdx] = [];
+  const existing = new Set(p.identities[nodeIdx]);
+  let i = 1;
+  let name;
+  do { name = `identity-${i}`; i++; } while (existing.has(name));
+  p.identities[nodeIdx].push(name);
+  save(); renderAll();
+  toast(`Added ${name}@${paladinNodeName(p, nodeIdx)}`);
+}
+function removeIdentity(projectId, nodeIdx, identity) {
+  const p = findProject(projectId);
+  if (!p) return;
+  if (!p.identities[nodeIdx]) return;
+  if (p.identities[nodeIdx].length <= 1) { toast('Every node needs at least one identity', 'warning'); return; }
+  p.identities[nodeIdx] = p.identities[nodeIdx].filter(x => x !== identity);
+  // Remove any group memberships pointing at this identity
+  state.privacyGroups.forEach(g => {
+    g.members = g.members.filter(m => !(m.projectId === projectId && m.nodeIndex === nodeIdx && m.identity === identity));
+  });
+  state.privacyGroups = state.privacyGroups.filter(g => g.members.length > 0);
+  save(); renderAll();
+}
+function memberLabel(m) {
+  const p = findProject(m.projectId);
+  if (!p) return 'unknown';
+  return `${m.identity}@${paladinNodeName(p, m.nodeIndex)}`;
+}
+function memberShortLabel(m) {
+  const p = findProject(m.projectId);
+  if (!p) return 'unknown';
+  return `${m.identity}@${projectSlug(p)}-p${m.nodeIndex + 1}`;
 }
 function removeProject(pid) {
   if (state.projects.length <= 1) return;
@@ -2215,6 +2371,10 @@ function changeProjectNodes(pid, delta) {
   const newN = Math.max(1, Math.min(9, p.paladinNodes + delta));
   if (newN === p.paladinNodes) return;
   p.paladinNodes = newN;
+  // Keep identities in sync
+  if (!Array.isArray(p.identities)) p.identities = [];
+  while (p.identities.length < newN) p.identities.push(['user']);
+  p.identities = p.identities.slice(0, newN);
   // Prune out-of-range members
   state.privacyGroups.forEach(g => {
     g.members = g.members.filter(m => !(m.projectId === pid && m.nodeIndex >= newN));
@@ -2235,8 +2395,10 @@ function addPrivacyGroup() {
   const sp = selectedProject();
   if (!sp) return;
   const nextNum = state.privacyGroups.length + 1;
-  // Default: ALL Paladin nodes of the current project
-  const members = Array.from({ length: sp.paladinNodes }, (_, i) => ({ projectId: sp.id, nodeIndex: i }));
+  // Default: the first identity of every node in this project
+  const members = Array.from({ length: sp.paladinNodes }, (_, i) => ({
+    projectId: sp.id, nodeIndex: i, identity: getIdentities(sp, i)[0],
+  }));
   state.privacyGroups.push({
     id: generateId('g'),
     name: `Group-${nextNum}`,
@@ -2252,8 +2414,10 @@ function addCrossProjectPG() {
     return;
   }
   const nextNum = state.privacyGroups.length + 1;
-  // Default: 1 node from each project
-  const members = state.projects.map(p => ({ projectId: p.id, nodeIndex: 0 }));
+  // Default: first identity of first node of each project
+  const members = state.projects.map(p => ({
+    projectId: p.id, nodeIndex: 0, identity: getIdentities(p, 0)[0],
+  }));
   state.privacyGroups.push({
     id: generateId('g'),
     name: `Cross-Group-${nextNum}`,
@@ -2268,15 +2432,15 @@ function removePrivacyGroup(gid) {
   if (state.selection.kind === 'group' && state.selection.groupId === gid) state.selection = { kind: null };
   save(); renderAll();
 }
-function toggleMember(gid, projectId, nodeIndex) {
+function toggleMember(gid, projectId, nodeIndex, identity) {
   const g = findGroupById(gid);
   if (!g) return;
-  const existsIdx = g.members.findIndex(m => m.projectId === projectId && m.nodeIndex === nodeIndex);
+  const existsIdx = g.members.findIndex(m => m.projectId === projectId && m.nodeIndex === nodeIndex && m.identity === identity);
   if (existsIdx >= 0) {
     if (g.members.length <= 1) { toast('Group needs at least one member', 'warning'); return; }
     g.members.splice(existsIdx, 1);
   } else {
-    g.members.push({ projectId, nodeIndex });
+    g.members.push({ projectId, nodeIndex, identity });
   }
   save(); renderNetwork(); renderInspector(); renderPGList();
 }
@@ -2311,7 +2475,7 @@ function deployContract(gid) {
   if (!g || g.members.length === 0) return;
   const template = CONTRACT_TEMPLATES[g.contracts.length % CONTRACT_TEMPLATES.length];
   const firstMember = g.members[0];
-  const p = findProject(firstMember.projectId);
+  const deployerLabel = memberLabel(firstMember);
   const c = {
     id: generateId('c'),
     name: `${template.name}-${g.contracts.length + 1}`,
@@ -2319,14 +2483,14 @@ function deployContract(gid) {
     address: shortAddr(),
     value: undefined,
     eventCount: 0,
-    deployedBy: paladinNodeName(p, firstMember.nodeIndex),
+    deployedBy: deployerLabel,
   };
   g.contracts.push(c);
   g.transactions.push({
     id: generateId('tx'),
     timestamp: nowTs(),
     contractId: c.id, contractName: c.name,
-    fn: 'deploy', arg: '(constructor)', from: c.deployedBy,
+    fn: 'deploy', arg: '(constructor)', from: deployerLabel,
     besuTxHash: shortHash(64), besuBlock: 1000 + g.transactions.length,
     utxoIn: shortHash(32), utxoOut: shortHash(32),
   });
@@ -2342,8 +2506,7 @@ function sendPrivateTx(gid, contractId) {
   const arg = template.arg();
   const mIdx = Math.floor(Math.random() * g.members.length);
   const mem = g.members[mIdx];
-  const p = findProject(mem.projectId);
-  const fromNode = paladinNodeName(p, mem.nodeIndex);
+  const fromNode = memberLabel(mem);
   openTxModal({ group: g, contract, template, arg, fromNode });
 }
 
@@ -2368,10 +2531,7 @@ function closeTxModal() {
   currentTx = null;
 }
 function txSteps(ctx) {
-  const memberNodeNames = ctx.group.members.map(m => {
-    const p = findProject(m.projectId);
-    return p ? paladinNodeName(p, m.nodeIndex) : 'unknown';
-  });
+  const memberNodeNames = ctx.group.members.map(m => memberLabel(m));
   const otherMembers = memberNodeNames.filter(n => n !== ctx.fromNode);
   return [
     { title: 'Application submits pgroup_sendTransaction', detail: `from: ${ctx.fromNode}, fn: ${ctx.template.fn}(${ctx.arg})`, kind: 'private' },
@@ -2424,10 +2584,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function renderTxFlowSvg(ctx, step) {
   const svg = document.getElementById('tx-flow-svg');
-  const memberNames = ctx.group.members.map(m => {
-    const p = findProject(m.projectId);
-    return p ? paladinNodeName(p, m.nodeIndex) : 'unknown';
-  });
+  const memberNames = ctx.group.members.map(m => memberLabel(m));
   const primary = { x: 100, y: 100, name: ctx.fromNode };
   const peers = memberNames.filter(n => n !== ctx.fromNode).slice(0, 3).map((n, i, arr) => ({
     x: 320 + (i - (arr.length - 1) / 2) * 90, y: 100, name: n,
@@ -2762,17 +2919,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'tx-modal') closeTxModal();
   });
 
-  // Zoom controls
-  document.getElementById('zoom-in').addEventListener('click', () => zoomBy(1.25));
-  document.getElementById('zoom-out').addEventListener('click', () => zoomBy(0.8));
+  // Zoom controls (buttons zoom around the center of the viewport)
+  document.getElementById('zoom-in').addEventListener('click', () => zoomCenter(1.2));
+  document.getElementById('zoom-out').addEventListener('click', () => zoomCenter(1 / 1.2));
   document.getElementById('zoom-reset').addEventListener('click', resetView);
   document.getElementById('copy-diagram').addEventListener('click', copyDiagramAsPNG);
 
-  // Wheel zoom on SVG
+  // Wheel zoom on SVG — proportional to deltaY + rAF-throttled + zoom-at-cursor
   const svg = document.getElementById('network');
   svg.addEventListener('wheel', e => {
     e.preventDefault();
-    zoomBy(e.deltaY < 0 ? 1.12 : 0.9);
+    scheduleWheelZoom(e.deltaY, e.clientX, e.clientY);
   }, { passive: false });
 
   // Pan by drag
