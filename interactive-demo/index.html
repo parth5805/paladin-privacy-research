@@ -1549,12 +1549,14 @@ function computeLayout() {
   const groups = state.privacyGroups;
   const n = besuNodeCount();
 
-  // Paladin nodes: grouped by project, laid out in tenant boxes across layer
+  // Paladin nodes: grouped by project, laid out in tenant boxes across layer.
+  // NOTE: bandY / project y1 pushed further down to clear the layer label
+  // "PALADIN NODES · PER TENANT" which sits at yTop+20.
   const paladinNodes = [];
   const projectBoxes = [];
   const marginX = 60;
-  const bandY = LAYER.paladin.yTop + 40;
-  const bandH = LAYER.paladin.yBottom - LAYER.paladin.yTop - 60;
+  const bandY = LAYER.paladin.yTop + 66;
+  const bandH = LAYER.paladin.yBottom - LAYER.paladin.yTop - 86;
   const totalW = NET_W - marginX * 2;
   const boxW = totalW / projects.length;
 
@@ -1582,7 +1584,7 @@ function computeLayout() {
       project: p, pi,
       x1: marginX + boxW * pi + 10,
       x2: marginX + boxW * (pi + 1) - 10,
-      y1: LAYER.paladin.yTop + 24,
+      y1: LAYER.paladin.yTop + 50,   // clears the layer label at yTop+20
       y2: LAYER.paladin.yBottom - 12,
       cx: marginX + boxW * pi + boxW / 2,
       nodes,
