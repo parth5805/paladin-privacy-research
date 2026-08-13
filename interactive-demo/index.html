@@ -1312,7 +1312,7 @@
       <button class="modal-close" id="tx-modal-close">×</button>
     </div>
     <div class="modal-body">
-      <svg id="tx-flow-svg" viewBox="0 0 560 400" preserveAspectRatio="xMidYMid meet"></svg>
+      <svg id="tx-flow-svg" viewBox="0 0 640 420" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="flow-log" id="flow-log"></div>
     </div>
     <div class="modal-actions">
@@ -1702,16 +1702,23 @@ function renderNetwork() {
     `);
   });
 
-  // Draw Paladin -> Besu connection lines. Each carries a "JSON-RPC" label
-  // near its start so the diagram is self-documenting.
+  // Draw Paladin -> Besu connection lines (curves only).
   paladinNodes.forEach(pn => {
     const yTarget = LAYER.besu.yTop + 20;
     parts.push(`
       <path d="M${pn.x},${pn.y + 14} C${pn.x},${(pn.y + yTarget) / 2 + 20} ${pn.x},${(pn.y + yTarget) / 2 - 20} ${pn.x},${yTarget}"
             fill="none" stroke="${pn.color}" stroke-opacity="0.28" stroke-width="1.2"/>
-      <g transform="translate(${pn.x} ${pn.y + 40})" pointer-events="none">
-        <rect x="-30" y="-7" width="60" height="14" rx="7" fill="#131a2b" stroke="${pn.color}" stroke-opacity="0.45" stroke-width="0.8"/>
-        <text x="0" y="3" font-size="8.5" text-anchor="middle" fill="${pn.color}" opacity="0.9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">JSON-RPC</text>
+    `);
+  });
+
+  // One "JSON-RPC" label per project, placed in the clear gap between the
+  // Paladin layer's box and the Besu layer. Avoids overlapping with any node.
+  projectBoxes.forEach(pb => {
+    const labelY = LAYER.paladin.yBottom + 30;
+    parts.push(`
+      <g transform="translate(${pb.cx} ${labelY})" pointer-events="none">
+        <rect x="-32" y="-8" width="64" height="16" rx="8" fill="#131a2b" stroke="${pb.project.color}" stroke-opacity="0.55" stroke-width="0.9"/>
+        <text x="0" y="4" font-size="9" text-anchor="middle" fill="${pb.project.color}" opacity="0.95" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">JSON-RPC</text>
       </g>
     `);
   });
@@ -1867,8 +1874,8 @@ function renderNetwork() {
               fill="#1a1408" stroke="#ffb545" stroke-width="1.2" stroke-opacity="0.65"/>
       </g>
       <g transform="translate(${midX} ${midY - 22})" pointer-events="none">
-        <rect x="-24" y="-7" width="48" height="14" rx="7" fill="#131a2b" stroke="#ffb545" stroke-opacity="0.45" stroke-width="0.8"/>
-        <text x="0" y="3" font-size="8.5" text-anchor="middle" fill="#ffb545" opacity="0.9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">QBFT · P2P</text>
+        <rect x="-34" y="-8" width="68" height="16" rx="8" fill="#131a2b" stroke="#ffb545" stroke-opacity="0.55" stroke-width="0.9"/>
+        <text x="0" y="4" font-size="9" text-anchor="middle" fill="#ffb545" opacity="0.95" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">QBFT · P2P</text>
       </g>
     `);
   }
@@ -2632,13 +2639,31 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function renderTxFlowSvg(ctx, step) {
   const svg = document.getElementById('tx-flow-svg');
+  // Abbreviate long member labels: "user@loan-paladin-3" → "user@p3"
+  // so tightly-packed labels don't overlap in the modal SVG.
+  const shortenMember = (label) => {
+    const [id, node] = String(label).split('@');
+    if (!node) return label;
+    const m = node.match(/paladin-(\d+)/);
+    const short = m ? 'p' + m[1] : node;
+    return `${id}@${short}`;
+  };
+
   const memberNames = ctx.group.members.map(m => memberLabel(m));
-  const primary = { x: 100, y: 100, name: ctx.fromNode };
-  const peers = memberNames.filter(n => n !== ctx.fromNode).slice(0, 3).map((n, i, arr) => ({
-    x: 320 + (i - (arr.length - 1) / 2) * 90, y: 100, name: n,
+  const allPeers = memberNames.filter(n => n !== ctx.fromNode);
+  const shownPeers = allPeers.slice(0, 2);   // show at most 2 to keep spacing clean
+  const extraPeers = allPeers.length - shownPeers.length;
+
+  const primary = { x: 110, y: 110, full: ctx.fromNode, label: shortenMember(ctx.fromNode) };
+  const evm     = { x: 220, y: 110 };
+  const peers   = shownPeers.map((n, i, arr) => ({
+    x: 380 + (i - (arr.length - 1) / 2) * 150,
+    y: 110,
+    full: n,
+    label: shortenMember(n),
   }));
-  const besu = { x: 100, y: 300 };
-  const evm = { x: 200, y: 100 };
+  const besu = { x: 110, y: 310 };
+  const nonMemberX = 520;
 
   const parts = [];
   parts.push(`
@@ -2651,51 +2676,68 @@ function renderTxFlowSvg(ctx, step) {
       </marker>
     </defs>
     <text x="20" y="20" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">PRIVATE ZONE (Paladin members)</text>
-    <line x1="20" y1="200" x2="540" y2="200" stroke="#26304a" stroke-dasharray="3 4"/>
-    <text x="20" y="220" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">PUBLIC ZONE (Shared Besu)</text>
-    <rect x="20" y="70" width="60" height="30" rx="5" fill="#1a2340" stroke="#26304a"/>
-    <text x="50" y="90" fill="#e6e9f2" text-anchor="middle" font-size="10">App</text>
+    <line x1="20" y1="215" x2="620" y2="215" stroke="#26304a" stroke-dasharray="3 4"/>
+    <text x="20" y="235" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">PUBLIC ZONE (Shared Besu)</text>
+
+    <!-- App -->
+    <rect x="20" y="80" width="60" height="30" rx="5" fill="#1a2340" stroke="#26304a"/>
+    <text x="50" y="100" fill="#e6e9f2" text-anchor="middle" font-size="10">App</text>
+
+    <!-- Coordinator -->
     <circle cx="${primary.x}" cy="${primary.y}" r="16" fill="#4d7cfe" filter="url(#soft-glow)"/>
-    <text x="${primary.x}" y="${primary.y + 4}" fill="white" text-anchor="middle" font-size="10" font-weight="700">p</text>
-    <text x="${primary.x}" y="${primary.y + 34}" fill="#e6e9f2" text-anchor="middle" font-size="9" font-family="ui-monospace, monospace">${primary.name}</text>
+    <text x="${primary.x}" y="${primary.y + 4}" fill="white" text-anchor="middle" font-size="10" font-weight="700"
+          paint-order="stroke fill" stroke="rgba(0,0,0,0.5)" stroke-width="2" stroke-linejoin="round">p</text>
+    <text x="${primary.x}" y="${primary.y + 36}" fill="#e6e9f2" text-anchor="middle" font-size="9" font-family="ui-monospace, monospace">${escapeHtml(primary.label)}</text>
     <text x="${primary.x}" y="${primary.y - 25}" fill="#8a94ad" text-anchor="middle" font-size="9">Coordinator</text>
   `);
   if (step >= 3) {
     parts.push(`
-      <rect x="${evm.x - 32}" y="${evm.y - 15}" width="64" height="30" rx="5"
+      <rect x="${evm.x - 36}" y="${evm.y - 15}" width="72" height="30" rx="5"
             fill="rgba(0, 212, 167, 0.15)" stroke="#00d4a7" stroke-dasharray="3 3"/>
-      <text x="${evm.x}" y="${evm.y + 5}" fill="#00d4a7" text-anchor="middle" font-size="9" font-weight="600">EVM (temp)</text>
+      <text x="${evm.x}" y="${evm.y + 4}" fill="#00d4a7" text-anchor="middle" font-size="9" font-weight="600">EVM (temp)</text>
+      <text x="${evm.x}" y="${evm.y - 22}" fill="#00d4a7" text-anchor="middle" font-size="8" opacity="0.7">ephemeral</text>
     `);
   }
   peers.forEach(pe => {
     parts.push(`
       <circle cx="${pe.x}" cy="${pe.y}" r="13" fill="#4d7cfe"/>
-      <text x="${pe.x}" y="${pe.y + 30}" fill="#e6e9f2" text-anchor="middle" font-size="9" font-family="ui-monospace, monospace">${pe.name}</text>
+      <text x="${pe.x}" y="${pe.y + 4}" fill="white" text-anchor="middle" font-size="9" font-weight="700"
+            paint-order="stroke fill" stroke="rgba(0,0,0,0.5)" stroke-width="2" stroke-linejoin="round">p</text>
+      <text x="${pe.x}" y="${pe.y + 36}" fill="#e6e9f2" text-anchor="middle" font-size="9" font-family="ui-monospace, monospace">${escapeHtml(pe.label)}</text>
       <text x="${pe.x}" y="${pe.y - 22}" fill="#8a94ad" text-anchor="middle" font-size="9">Endorser</text>
     `);
   });
+  if (extraPeers > 0) {
+    const lastX = peers[peers.length - 1].x;
+    parts.push(`
+      <text x="${lastX + 90}" y="${primary.y + 4}" fill="#8a94ad" text-anchor="middle" font-size="10" font-style="italic">+${extraPeers} more</text>
+    `);
+  }
   parts.push(`
-    <ellipse cx="${besu.x}" cy="${besu.y}" rx="60" ry="28"
+    <ellipse cx="${besu.x}" cy="${besu.y}" rx="66" ry="28"
              fill="rgba(255, 181, 69, 0.1)" stroke="#ffb545" stroke-width="1.5"/>
     <text x="${besu.x}" y="${besu.y + 4}" fill="#ffb545" text-anchor="middle" font-size="11" font-weight="700">Shared Besu</text>
     <text x="${besu.x}" y="${besu.y + 20}" fill="#ffb545" text-anchor="middle" font-size="8" opacity="0.7">${besuNodeCount()} validators</text>
-    <circle cx="470" cy="300" r="13" fill="#5c667f" opacity="0.5"/>
-    <text x="470" y="330" fill="#5c667f" text-anchor="middle" font-size="9" font-family="ui-monospace, monospace">non-member</text>
-    <text x="470" y="278" fill="#5c667f" text-anchor="middle" font-size="9">Sees only hashes</text>
+
+    <!-- Non-member node -->
+    <circle cx="${nonMemberX}" cy="${besu.y}" r="13" fill="#5c667f" opacity="0.5"/>
+    <text x="${nonMemberX}" y="${besu.y + 30}" fill="#5c667f" text-anchor="middle" font-size="9" font-family="ui-monospace, monospace">non-member</text>
+    <text x="${nonMemberX}" y="${besu.y - 22}" fill="#5c667f" text-anchor="middle" font-size="9">Sees only hashes</text>
   `);
-  if (step >= 1) parts.push(`<path d="M80,85 L${primary.x - 16},${primary.y}" stroke="#7c5cff" fill="none" marker-end="url(#arr)"/>`);
-  if (step >= 3) parts.push(`<path d="M${primary.x + 16},${primary.y} L${evm.x - 32},${evm.y}" stroke="#7c5cff" fill="none" marker-end="url(#arr)"/>`);
-  if (step >= 5) peers.forEach(pe => parts.push(`<path d="M${primary.x + 16},${primary.y} L${pe.x - 13},${pe.y}" stroke="#7c5cff" fill="none" opacity="0.8" marker-end="url(#arr)"/>`));
-  if (step >= 6) peers.forEach(pe => parts.push(`<path d="M${pe.x - 13},${pe.y + 6} L${primary.x + 16},${primary.y + 6}" stroke="#00d4a7" fill="none" stroke-dasharray="3 3" opacity="0.8"/>`));
+  if (step >= 1) parts.push(`<path d="M80,95 L${primary.x - 16},${primary.y}" stroke="#7c5cff" fill="none" marker-end="url(#arr)"/>`);
+  if (step >= 3) parts.push(`<path d="M${primary.x + 16},${primary.y} L${evm.x - 36},${evm.y}" stroke="#7c5cff" fill="none" marker-end="url(#arr)"/>`);
+  if (step >= 5) peers.forEach(pe => parts.push(`<path d="M${evm.x + 36},${evm.y} L${pe.x - 13},${pe.y}" stroke="#7c5cff" fill="none" opacity="0.8" marker-end="url(#arr)"/>`));
+  if (step >= 6) peers.forEach(pe => parts.push(`<path d="M${pe.x - 13},${pe.y + 6} L${evm.x + 36},${evm.y + 6}" stroke="#00d4a7" fill="none" stroke-dasharray="3 3" opacity="0.8"/>`));
   if (step >= 7) {
     parts.push(`<path d="M${primary.x},${primary.y + 16} L${besu.x},${besu.y - 28}" stroke="#ffb545" fill="none" stroke-width="2" marker-end="url(#arr-y)"/>`);
-    parts.push(`<text x="${(primary.x + besu.x) / 2 + 10}" y="${(primary.y + besu.y) / 2 - 5}" fill="#ffb545" font-size="9" font-weight="600">UTXO commit</text>`);
+    parts.push(`<text x="${primary.x + 8}" y="${(primary.y + besu.y) / 2}" fill="#ffb545" font-size="9" font-weight="600">UTXO commit</text>`);
   }
   if (step >= 8) {
-    peers.forEach(pe => parts.push(`<path d="M${primary.x + 16},${primary.y - 6} L${pe.x - 13},${pe.y - 6}" stroke="#7c5cff" fill="none" stroke-dasharray="2 3" opacity="0.7"/>`));
-    parts.push(`<text x="200" y="70" fill="#7c5cff" font-size="9" font-weight="600">plaintext state</text>`);
+    peers.forEach(pe => parts.push(`<path d="M${primary.x + 16},${primary.y - 8} L${pe.x - 13},${pe.y - 8}" stroke="#7c5cff" fill="none" stroke-dasharray="2 3" opacity="0.7"/>`));
+    const midX = (primary.x + (peers[0]?.x || 380)) / 2;
+    parts.push(`<text x="${midX}" y="${primary.y - 40}" fill="#7c5cff" font-size="9" font-weight="600" text-anchor="middle">state distribution (plaintext)</text>`);
   }
-  if (step >= 9) parts.push(`<path d="M${besu.x + 60},${besu.y} L${460},${300}" stroke="#ffb545" fill="none" opacity="0.5" stroke-dasharray="4 4"/>`);
+  if (step >= 9) parts.push(`<path d="M${besu.x + 66},${besu.y} L${nonMemberX - 13},${besu.y}" stroke="#ffb545" fill="none" opacity="0.5" stroke-dasharray="4 4"/>`);
 
   svg.innerHTML = parts.join('\n');
 }
@@ -2869,9 +2911,21 @@ function renderAll() {
 document.addEventListener('DOMContentLoaded', () => {
   load();
 
+  // rAF-throttle the slider so dragging stays smooth (input events fire
+  // many times per second; we don't want to re-render the SVG each time)
+  let ftPending = false;
   document.getElementById('ft-slider').addEventListener('input', e => {
     state.besu.faultTolerance = parseInt(e.target.value, 10);
-    save(); renderStats(); renderNetwork();
+    // Reflect the number immediately (cheap), throttle the SVG re-render
+    document.getElementById('ft-val').textContent = state.besu.faultTolerance;
+    document.getElementById('besu-total').textContent = besuNodeCount();
+    document.getElementById('besu-tolerates').textContent = tolerates();
+    if (ftPending) return;
+    ftPending = true;
+    requestAnimationFrame(() => {
+      ftPending = false;
+      save(); renderStats(); renderNetwork();
+    });
   });
   document.getElementById('add-project').addEventListener('click', addProject);
   document.getElementById('add-pg').addEventListener('click', addPrivacyGroup);
