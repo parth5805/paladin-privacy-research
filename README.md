@@ -37,6 +37,8 @@ All ASCII or Mermaid — versionable in Git, no binary assets. See [diagrams/](d
 - Should-I-use-SharedChain helper — four questions produce a specific topology recommendation
 - Tabbed reference on data segregation, L2 integration, BCP/DR, upgrades, release patterns, migration
 
+Presenting it? See **[interactive-demo/WALKTHROUGH.md](interactive-demo/WALKTHROUGH.md)** — a 30-minute client call script with what to click, what to say, a 10-minute cut, and common questions.
+
 No install, no build, no CDN. Attach to an email or open locally. Choices persist in the browser's `localStorage`.
 
 ## Runnable demo (against real Paladin v1.0.0)

@@ -36,6 +36,10 @@ The whole thing is one file. You can:
 - Host it on any static site host (GitHub Pages, S3, etc.)
 - Embed in an internal knowledge base as an iframe
 
+## Presenting to a client / team
+
+See **[WALKTHROUGH.md](WALKTHROUGH.md)** — a ready-to-use 30-minute call script with what to click, what to say, a 10-minute cut for shorter calls, and a table of common client questions with the exact demo view that answers each one.
+
 ## Design notes
 
 - Pure HTML + CSS + vanilla JS. No frameworks, no build.
