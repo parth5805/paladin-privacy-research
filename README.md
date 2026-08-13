@@ -28,7 +28,18 @@ Reproducible proof at [evidence/live-run-truth-table.txt](evidence/live-run-trut
 
 All ASCII or Mermaid — versionable in Git, no binary assets. See [diagrams/](diagrams/).
 
-## Runnable demo
+## Interactive one-file explainer (browser)
+
+[interactive-demo/](interactive-demo/) — a single self-contained HTML file (`index.html`) that opens in any browser and offers:
+
+- Live topology configurator (shared Besu fault tolerance, tenants, Paladin nodes, privacy groups) with a real-time SVG network diagram
+- Domain decision matrix (Pente / Zeto / Noto) that updates as you tick your use-case requirements
+- Should-I-use-SharedChain helper — four questions produce a specific topology recommendation
+- Tabbed reference on data segregation, L2 integration, BCP/DR, upgrades, release patterns, migration
+
+No install, no build, no CDN. Attach to an email or open locally. Choices persist in the browser's `localStorage`.
+
+## Runnable demo (against real Paladin v1.0.0)
 
 [demo/](demo/) — a self-contained TypeScript demo that:
 - Creates 2 privacy groups sharing 3 Paladin nodes
