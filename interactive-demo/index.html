@@ -3,11 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SharedChain — Interactive Explainer for Enterprise Blockchain Consolidation</title>
+<title>SharedChain — Interactive Explainer for Shared-Blockchain Platforms</title>
 <style>
-  /* =========================================================================
-     Reset + base
-     ========================================================================= */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
@@ -17,19 +14,18 @@
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    font-size: 14px;
   }
   button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
   input, select { font: inherit; color: inherit; }
   a { color: #7c5cff; text-decoration: none; }
   a:hover { text-decoration: underline; }
 
-  /* =========================================================================
-     Variables
-     ========================================================================= */
   :root {
     --bg:            #0a0e1a;
     --surface:       #131a2b;
     --surface-2:     #1a2340;
+    --surface-3:     #212c4d;
     --border:        #26304a;
     --border-2:      #2f3b5a;
     --primary:       #4d7cfe;
@@ -46,16 +42,15 @@
     --pente-c:       #7c5cff;
     --zeto-c:        #00d4a7;
     --noto-c:        #ff5c7a;
+    --pg-c:          #a48bff;
   }
 
-  /* =========================================================================
-     Layout
-     ========================================================================= */
+  /* Topbar */
   .topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 28px;
+    padding: 12px 24px;
     background: linear-gradient(180deg, rgba(19, 26, 43, 0.95) 0%, rgba(19, 26, 43, 0.85) 100%);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(10px);
@@ -63,345 +58,195 @@
     top: 0;
     z-index: 100;
   }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
+  .brand { display: flex; align-items: center; gap: 14px; }
   .brand-mark {
-    width: 40px; height: 40px;
+    width: 38px; height: 38px;
     display: grid; place-items: center;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-    border-radius: 10px;
-    font-size: 22px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 9px;
+    font-size: 20px;
     color: white;
-    box-shadow: 0 4px 20px rgba(124, 92, 255, 0.4);
+    box-shadow: 0 4px 18px rgba(124, 92, 255, 0.35);
   }
   .brand-name {
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
+    font-size: 18px; font-weight: 700; letter-spacing: -0.3px;
     background: linear-gradient(90deg, #fff 0%, #a4b3d4 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .brand-sub {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 2px;
-  }
-
+  .brand-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
   .menu {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    background: var(--surface-2);
-    padding: 6px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
+    display: flex; gap: 4px; align-items: center;
+    background: var(--surface-2); padding: 5px; border-radius: 10px; border: 1px solid var(--border);
   }
   .menu button {
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
+    padding: 7px 14px; border-radius: 6px;
+    font-size: 12.5px; font-weight: 500;
     color: var(--text-muted);
-    transition: all 0.15s ease;
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
   }
   .menu button:hover:not(:disabled) { color: var(--text); background: rgba(77, 124, 254, 0.08); }
   .menu button.active {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    background: linear-gradient(135deg, var(--primary), var(--accent));
     color: white;
     box-shadow: 0 2px 12px rgba(77, 124, 254, 0.3);
   }
   .menu button:disabled { opacity: 0.5; cursor: not-allowed; }
   .menu .tag {
-    font-size: 10px;
-    padding: 2px 6px;
-    background: rgba(255, 181, 69, 0.15);
-    color: var(--warning);
-    border-radius: 4px;
-    font-weight: 600;
+    font-size: 9px; padding: 2px 6px;
+    background: rgba(255, 181, 69, 0.15); color: var(--warning);
+    border-radius: 4px; font-weight: 700;
   }
 
-  /* =========================================================================
-     Main layout
-     ========================================================================= */
+  /* Layout */
   .layout {
     display: grid;
-    grid-template-columns: 340px 1fr;
-    min-height: calc(100vh - 68px);
+    grid-template-columns: 320px 1fr;
+    min-height: calc(100vh - 62px);
   }
-
   .sidebar {
     background: var(--surface);
     border-right: 1px solid var(--border);
-    padding: 20px;
+    padding: 18px;
     overflow-y: auto;
-    height: calc(100vh - 68px);
+    height: calc(100vh - 62px);
     position: sticky;
-    top: 68px;
+    top: 62px;
   }
+  .canvas { padding: 24px 28px; overflow-x: hidden; min-width: 0; }
 
-  .canvas {
-    padding: 28px 32px;
-    overflow-x: hidden;
-    min-width: 0;
-  }
-
-  /* =========================================================================
-     Sidebar
-     ========================================================================= */
-  .sidebar-section {
-    margin-bottom: 22px;
-  }
+  /* Sidebar */
+  .sidebar-section { margin-bottom: 20px; }
   .sidebar-section h3 {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 1px;
+    color: var(--text-dim); text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
   }
   .sidebar-section h3::before {
-    content: '';
-    width: 3px;
-    height: 12px;
-    background: var(--primary);
-    border-radius: 2px;
+    content: ''; width: 3px; height: 11px;
+    background: var(--primary); border-radius: 2px;
   }
-
-  .field {
-    margin-bottom: 12px;
-  }
+  .field { margin-bottom: 10px; }
   .field-label {
-    display: block;
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 6px;
+    display: block; font-size: 11.5px; color: var(--text-muted); margin-bottom: 5px;
   }
-  .field-label .val {
-    float: right;
-    color: var(--primary);
-    font-weight: 600;
-  }
+  .field-label .val { float: right; color: var(--primary); font-weight: 600; }
 
   .slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    background: var(--surface-2);
-    border-radius: 3px;
-    outline: none;
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 5px;
+    background: var(--surface-2); border-radius: 3px; outline: none;
     border: 1px solid var(--border);
   }
   .slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 16px;
     background: linear-gradient(135deg, var(--primary), var(--accent));
-    border-radius: 50%;
-    cursor: pointer;
+    border-radius: 50%; cursor: pointer;
     box-shadow: 0 2px 8px rgba(77, 124, 254, 0.4);
     border: 2px solid var(--surface);
   }
   .slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
+    width: 16px; height: 16px;
     background: linear-gradient(135deg, var(--primary), var(--accent));
-    border-radius: 50%;
-    cursor: pointer;
+    border-radius: 50%; cursor: pointer;
     border: 2px solid var(--surface);
   }
 
   .stat-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 10px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 10px;
     background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 12px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 11.5px;
+    margin-bottom: 4px;
   }
   .stat-row .k { color: var(--text-muted); }
   .stat-row .v { color: var(--text); font-weight: 600; }
 
   .project-item {
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 8px;
-    transition: all 0.15s;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 6px;
+    transition: all 0.15s; cursor: pointer;
   }
   .project-item.selected {
     border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(77, 124, 254, 0.15);
   }
   .project-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
   }
-  .project-color {
-    width: 10px; height: 10px; border-radius: 3px;
-  }
+  .project-color { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .project-name {
-    font-size: 13px;
-    font-weight: 600;
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text);
-    outline: none;
-    border-bottom: 1px dashed transparent;
-    transition: border-color 0.15s;
+    font-size: 12.5px; font-weight: 600; flex: 1;
+    background: transparent; border: none; color: var(--text);
+    outline: none; padding: 2px 0;
+    border-bottom: 1px dashed transparent; transition: border-color 0.15s;
   }
   .project-name:focus, .project-name:hover { border-bottom-color: var(--border-2); }
   .project-remove {
-    color: var(--text-dim);
-    font-size: 12px;
-    padding: 2px 6px;
-    border-radius: 4px;
+    color: var(--text-dim); font-size: 12px;
+    padding: 2px 6px; border-radius: 4px;
   }
   .project-remove:hover { color: var(--danger); background: rgba(255, 92, 122, 0.1); }
-
   .project-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: var(--text-muted); margin-top: 6px;
   }
-
   .num-control {
-    display: inline-flex;
-    align-items: center;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    overflow: hidden;
+    display: inline-flex; align-items: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 5px; overflow: hidden;
   }
   .num-control button {
-    padding: 3px 8px;
-    color: var(--text-muted);
-    font-weight: 600;
+    padding: 2px 8px; color: var(--text-muted); font-weight: 600;
   }
   .num-control button:hover { background: var(--border); color: var(--text); }
   .num-control .val {
-    padding: 3px 8px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-    min-width: 26px;
-    text-align: center;
+    padding: 2px 8px; font-size: 11.5px; font-weight: 600; color: var(--text);
+    min-width: 24px; text-align: center;
   }
 
   .btn {
-    padding: 8px 14px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text);
-    transition: all 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    padding: 7px 12px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 11.5px; font-weight: 500;
+    color: var(--text); transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
   }
   .btn:hover { border-color: var(--primary); color: var(--primary); }
   .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--accent));
-    border-color: transparent;
-    color: white;
+    border-color: transparent; color: white;
   }
   .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(77, 124, 254, 0.4); color: white; }
   .btn-block { width: 100%; justify-content: center; }
-  .btn-sm { padding: 5px 10px; font-size: 11px; }
+  .btn-sm { padding: 4px 9px; font-size: 11px; }
   .btn-ghost {
-    background: transparent;
-    border: 1px dashed var(--border-2);
-    color: var(--text-muted);
+    background: transparent; border: 1px dashed var(--border-2); color: var(--text-muted);
   }
   .btn-ghost:hover { border-style: solid; color: var(--primary); border-color: var(--primary); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn:disabled:hover { transform: none; box-shadow: none; }
 
-  .privacy-group-item {
-    background: var(--surface);
-    border-left: 3px solid var(--pente-c);
-    padding: 8px 10px;
-    margin-bottom: 6px;
-    border-radius: 4px;
-    font-size: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .pg-name { font-weight: 500; }
-  .pg-meta { color: var(--text-muted); font-size: 10px; }
-  .pg-remove { color: var(--text-dim); padding: 0 4px; }
-  .pg-remove:hover { color: var(--danger); }
-
-  .checkbox-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-  .checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    background: var(--surface);
-    border-radius: 4px;
-    font-size: 11px;
-    cursor: pointer;
-    transition: background 0.1s;
-  }
-  .checkbox-item:hover { background: var(--surface-2); }
-  .checkbox-item input { accent-color: var(--primary); }
-
-  /* =========================================================================
-     Canvas / Hero
-     ========================================================================= */
-  .hero {
-    margin-bottom: 24px;
-  }
+  /* Hero */
+  .hero { margin-bottom: 20px; }
   .hero h1 {
-    font-size: 28px;
-    letter-spacing: -0.5px;
-    margin-bottom: 6px;
+    font-size: 26px; letter-spacing: -0.5px; margin-bottom: 5px;
     background: linear-gradient(90deg, #fff 0%, #a4b3d4 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .hero .subtitle {
-    color: var(--text-muted);
-    font-size: 14px;
-    max-width: 780px;
-  }
+  .hero .subtitle { color: var(--text-muted); font-size: 13px; max-width: 800px; }
   .hero .kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--primary);
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10.5px; color: var(--primary);
     background: rgba(77, 124, 254, 0.1);
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    padding: 4px 10px; border-radius: 20px;
+    font-weight: 600; margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: 0.5px;
   }
   .kicker .dot {
     width: 6px; height: 6px; background: var(--primary); border-radius: 50%;
@@ -412,185 +257,275 @@
     50% { opacity: 0.5; transform: scale(1.5); }
   }
 
-  /* =========================================================================
-     Network visualization
-     ========================================================================= */
+  /* Network + Inspector grid */
+  .canvas-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 1180px) {
+    .canvas-grid { grid-template-columns: 1fr; }
+  }
+
   .network-container {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 24px;
+    padding: 16px;
     position: relative;
     overflow: hidden;
+    min-width: 0;
   }
   .network-container::before {
     content: '';
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0; pointer-events: none;
     background:
-      radial-gradient(ellipse at 30% 20%, rgba(77, 124, 254, 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 70% 80%, rgba(124, 92, 255, 0.06) 0%, transparent 50%);
-    pointer-events: none;
+      radial-gradient(ellipse at 30% 20%, rgba(77, 124, 254, 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(124, 92, 255, 0.05) 0%, transparent 50%);
   }
   .network-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    position: relative;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; position: relative;
   }
-  .network-title {
-    font-size: 15px;
-    font-weight: 600;
-  }
+  .network-title { font-size: 14px; font-weight: 600; }
+  .network-title small { color: var(--text-muted); font-weight: 400; font-size: 12px; margin-left: 8px; }
   .network-summary {
-    display: flex;
-    gap: 16px;
-    font-size: 11px;
-    color: var(--text-muted);
+    display: flex; gap: 12px; font-size: 11px; color: var(--text-muted); flex-wrap: wrap;
   }
   .network-summary span { display: inline-flex; align-items: center; gap: 4px; }
-  .network-summary .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-  }
+  .network-summary .dot { width: 8px; height: 8px; border-radius: 50%; }
 
   #network {
-    width: 100%;
-    height: 500px;
-    display: block;
-  }
-
-  .legend {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-    font-size: 11px;
-    color: var(--text-muted);
+    width: 100%; height: 560px; display: block;
     position: relative;
+  }
+  .legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-muted); position: relative;
   }
   .legend-item { display: inline-flex; align-items: center; gap: 6px; }
   .legend-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    box-shadow: 0 0 8px currentColor;
+    width: 9px; height: 9px; border-radius: 50%;
+    box-shadow: 0 0 6px currentColor;
   }
 
-  /* SVG node styles */
+  /* SVG interactions */
   .svg-node { cursor: pointer; transition: transform 0.15s; }
-  .svg-node:hover { transform: scale(1.15); transform-origin: center; transform-box: fill-box; }
-  .svg-link {
-    stroke-width: 1.2;
-    fill: none;
-    opacity: 0.35;
-    transition: opacity 0.3s;
+  .svg-node:hover { transform: scale(1.1); transform-origin: center; transform-box: fill-box; }
+  .svg-link { stroke-width: 1.2; fill: none; opacity: 0.25; transition: opacity 0.3s; }
+  .svg-link.active { opacity: 0.85; stroke-width: 2; }
+  .svg-pg { cursor: pointer; transition: all 0.2s; }
+  .svg-pg:hover { filter: brightness(1.4); }
+  .svg-pg.selected { stroke-width: 2; stroke-dasharray: none; }
+  .svg-label {
+    font-size: 9.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    fill: var(--text-muted);
+    pointer-events: none;
+    user-select: none;
   }
-  .svg-link.highlight { opacity: 0.9; stroke-width: 2; }
+  .svg-label-strong { fill: var(--text); font-weight: 600; }
 
-  /* =========================================================================
-     Tabs / content
-     ========================================================================= */
+  /* Inspector panel */
+  .inspector {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    min-height: 606px;
+  }
+  .inspector-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
+  }
+  .inspector-title {
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .inspector-title .pill {
+    font-size: 10px; padding: 2px 7px;
+    background: rgba(124, 92, 255, 0.15); color: var(--pg-c);
+    border-radius: 4px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .inspector-body { padding: 14px 16px; overflow-y: auto; flex: 1; }
+  .inspector-empty {
+    text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 12px;
+  }
+  .inspector-empty .icon {
+    font-size: 40px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+
+  .inspector-section {
+    margin-bottom: 18px;
+  }
+  .inspector-section-head {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 1px;
+    color: var(--text-dim); text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .member-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px 5px 6px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 20px; margin: 2px;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .member-chip .avatar {
+    width: 16px; height: 16px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 9px; font-weight: 700; color: white;
+  }
+
+  .contract-item {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 6px;
+    font-size: 11.5px;
+  }
+  .contract-item .name { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
+  .contract-item .addr {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px; color: var(--text-muted);
+    background: var(--surface); padding: 3px 6px; border-radius: 4px;
+    display: inline-block;
+  }
+  .contract-item .state {
+    margin-top: 6px; padding-top: 6px;
+    border-top: 1px dashed var(--border-2);
+    color: var(--text-muted); font-size: 11px;
+  }
+  .contract-item .state b { color: var(--text); }
+
+  .tx-log {
+    background: #05080f;
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; color: var(--text-muted);
+    max-height: 220px; overflow-y: auto;
+  }
+  .tx-log .line { padding: 3px 0; }
+  .tx-log .line.public { color: #ffb54599; }
+  .tx-log .line.private { color: #7c5cff; }
+  .tx-log .line.info { color: var(--success); }
+  .tx-log .line .ts { color: var(--text-dim); margin-right: 6px; }
+  .tx-log .line .tag {
+    display: inline-block; padding: 1px 5px; border-radius: 3px;
+    font-size: 9px; font-weight: 700; margin-right: 6px;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .tx-log .line .tag.public { background: rgba(255,181,69,0.2); color: var(--warning); }
+  .tx-log .line .tag.private { background: rgba(124,92,255,0.2); color: var(--pg-c); }
+
+  .split {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-top: 8px;
+  }
+  .split-panel {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    min-height: 100px;
+  }
+  .split-panel h5 {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .split-panel.public h5 { color: var(--besu-c); }
+  .split-panel.private h5 { color: var(--pg-c); }
+  .split-panel .content {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px; color: var(--text-muted); line-height: 1.6;
+  }
+  .split-panel .content b { color: var(--text); }
+  .split-panel .empty { color: var(--text-dim); font-style: italic; font-size: 11px; }
+
+  /* Tabs */
   .tabs {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
     overflow: hidden;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   .tab-nav {
-    display: flex;
-    background: var(--surface-2);
+    display: flex; background: var(--surface-2);
     border-bottom: 1px solid var(--border);
-    padding: 0 8px;
-    overflow-x: auto;
+    padding: 0 6px; overflow-x: auto;
   }
   .tab-nav button {
-    padding: 14px 16px;
-    font-size: 13px;
-    color: var(--text-muted);
-    font-weight: 500;
-    white-space: nowrap;
-    position: relative;
+    padding: 13px 14px; font-size: 12.5px;
+    color: var(--text-muted); font-weight: 500;
+    white-space: nowrap; position: relative;
     transition: color 0.15s;
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
   }
   .tab-nav button:hover { color: var(--text); }
-  .tab-nav button.active {
-    color: var(--text);
-    border-bottom-color: var(--primary);
-  }
+  .tab-nav button.active { color: var(--text); border-bottom-color: var(--primary); }
   .tab-nav .badge {
-    display: inline-block;
-    margin-left: 6px;
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-weight: 700;
-    text-transform: uppercase;
+    display: inline-block; margin-left: 5px;
+    font-size: 9px; padding: 2px 5px; border-radius: 3px;
+    font-weight: 700; text-transform: uppercase;
   }
   .badge-must { background: rgba(255, 92, 122, 0.15); color: var(--danger); }
   .badge-should { background: rgba(255, 181, 69, 0.15); color: var(--warning); }
   .badge-could { background: rgba(0, 212, 167, 0.15); color: var(--success); }
 
-  .tab-body {
-    padding: 24px;
-  }
+  .tab-body { padding: 20px 22px; }
   .tab-panel { display: none; }
-  .tab-panel.active { display: block; animation: fadeIn 0.3s ease-out; }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  .tab-panel.active { display: block; animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-  h2 { font-size: 18px; letter-spacing: -0.3px; margin-bottom: 10px; }
-  h3 { font-size: 14px; margin: 16px 0 8px; }
-  p { color: var(--text-muted); margin-bottom: 10px; font-size: 13px; }
+  h2 { font-size: 17px; letter-spacing: -0.3px; margin-bottom: 8px; }
+  h3 { font-size: 13px; margin: 14px 0 6px; }
+  p { color: var(--text-muted); margin-bottom: 8px; font-size: 12.5px; }
   strong { color: var(--text); font-weight: 600; }
 
-  /* =========================================================================
-     Cards / tables / matrix
-     ========================================================================= */
   .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 12px;
-    margin: 12px 0;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px; margin: 10px 0;
   }
   .card {
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
   }
-  .card h4 { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600; }
-  .card .big { font-size: 24px; font-weight: 700; }
-  .card .desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .card h4 {
+    font-size: 11px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 6px; font-weight: 600;
+  }
+  .card .big { font-size: 22px; font-weight: 700; }
+  .card .desc { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
 
   table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 12px 0;
-    font-size: 13px;
+    width: 100%; border-collapse: collapse; margin: 10px 0;
+    font-size: 12.5px;
     background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border: 1px solid var(--border); border-radius: 8px;
     overflow: hidden;
   }
-  th, td {
-    padding: 10px 14px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
+  th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); }
   th {
     background: rgba(77, 124, 254, 0.08);
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
+    font-size: 10.5px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
   }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: rgba(77, 124, 254, 0.03); }
@@ -601,83 +536,57 @@
   td.strong { color: var(--text); font-weight: 600; }
 
   .use-case-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 12px;
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
   }
   .chip {
-    padding: 7px 12px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    font-size: 12px;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    padding: 6px 11px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 20px; font-size: 11.5px; color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
   }
   .chip:hover { border-color: var(--primary); color: var(--text); }
   .chip.selected {
-    background: rgba(77, 124, 254, 0.15);
-    border-color: var(--primary);
-    color: var(--primary);
+    background: rgba(77, 124, 254, 0.15); border-color: var(--primary); color: var(--primary);
   }
-  .chip .icon { font-size: 14px; }
+  .chip .icon { font-size: 13px; }
 
   .recommendation {
-    padding: 16px;
+    padding: 14px;
     background: linear-gradient(135deg, rgba(77, 124, 254, 0.08) 0%, rgba(124, 92, 255, 0.05) 100%);
     border: 1px solid rgba(77, 124, 254, 0.3);
     border-radius: 10px;
-    margin: 12px 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    margin: 10px 0;
+    display: flex; align-items: flex-start; gap: 12px;
   }
   .rec-icon {
-    width: 36px; height: 36px;
+    width: 34px; height: 34px;
     display: grid; place-items: center;
     background: linear-gradient(135deg, var(--primary), var(--accent));
-    border-radius: 8px;
-    font-size: 18px;
-    color: white;
+    border-radius: 8px; font-size: 16px; color: white;
     flex-shrink: 0;
   }
-  .rec-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; color: var(--text); }
-  .rec-body { font-size: 13px; color: var(--text-muted); }
+  .rec-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; color: var(--text); }
+  .rec-body { font-size: 12px; color: var(--text-muted); }
 
-  .list-clean {
-    list-style: none;
-    padding: 0;
-    margin: 8px 0;
-  }
+  .list-clean { list-style: none; padding: 0; margin: 6px 0; }
   .list-clean li {
-    padding: 8px 0 8px 22px;
-    color: var(--text-muted);
-    font-size: 13px;
-    position: relative;
+    padding: 7px 0 7px 20px; color: var(--text-muted);
+    font-size: 12px; position: relative;
     border-bottom: 1px solid var(--border);
   }
   .list-clean li:last-child { border-bottom: none; }
   .list-clean li::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: var(--primary);
-    font-weight: 700;
+    content: '→'; position: absolute; left: 0;
+    color: var(--primary); font-weight: 700;
   }
 
   .callout {
-    padding: 14px 16px;
+    padding: 12px 14px;
     border-left: 3px solid var(--primary);
     background: rgba(77, 124, 254, 0.05);
-    border-radius: 6px;
-    margin: 12px 0;
-    font-size: 13px;
-    color: var(--text);
+    border-radius: 6px; margin: 10px 0;
+    font-size: 12px; color: var(--text);
   }
   .callout.warning { border-color: var(--warning); background: rgba(255, 181, 69, 0.05); }
   .callout.success { border-color: var(--success); background: rgba(0, 212, 167, 0.05); }
@@ -685,103 +594,149 @@
   .callout-title { font-weight: 600; margin-bottom: 4px; }
 
   .flow-diagram {
-    display: flex;
-    align-items: stretch;
-    gap: 8px;
-    margin: 16px 0;
-    overflow-x: auto;
-    padding-bottom: 4px;
+    display: flex; align-items: stretch; gap: 8px;
+    margin: 14px 0; overflow-x: auto; padding-bottom: 4px;
   }
   .flow-step {
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    min-width: 140px;
-    flex: 1;
-    font-size: 12px;
-    position: relative;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; min-width: 130px; flex: 1;
+    font-size: 11.5px; position: relative;
   }
   .flow-step + .flow-step::before {
-    content: '›';
-    position: absolute;
-    left: -8px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-dim);
-    font-size: 20px;
-    font-weight: 700;
+    content: '›'; position: absolute; left: -8px; top: 50%;
+    transform: translateY(-50%); color: var(--text-dim);
+    font-size: 18px; font-weight: 700;
   }
   .flow-step .num {
-    display: inline-block;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: var(--primary);
-    color: white;
-    text-align: center;
-    line-height: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    margin-bottom: 6px;
+    display: inline-block; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--primary);
+    color: white; text-align: center; line-height: 18px;
+    font-size: 10px; font-weight: 700; margin-bottom: 5px;
   }
   .flow-step .lbl { font-weight: 600; margin-bottom: 3px; }
-  .flow-step .desc { color: var(--text-muted); font-size: 11px; }
+  .flow-step .desc { color: var(--text-muted); font-size: 10.5px; }
 
   .tag-inline {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    margin: 0 4px;
-    vertical-align: middle;
+    display: inline-block; padding: 2px 7px;
+    border-radius: 4px; font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    margin: 0 3px; vertical-align: middle;
   }
   .tag-inline.pente { background: rgba(124, 92, 255, 0.15); color: var(--pente-c); }
   .tag-inline.zeto  { background: rgba(0, 212, 167, 0.15); color: var(--zeto-c); }
   .tag-inline.noto  { background: rgba(255, 92, 122, 0.15); color: var(--noto-c); }
   .tag-inline.besu  { background: rgba(255, 181, 69, 0.15); color: var(--besu-c); }
-  .tag-inline.new   { background: rgba(0, 212, 167, 0.15); color: var(--success); }
-  .tag-inline.soon  { background: rgba(255, 181, 69, 0.15); color: var(--warning); }
 
   .metric-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 10px;
-    margin: 12px 0;
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px; margin: 10px 0;
   }
   @media (max-width: 800px) { .metric-row { grid-template-columns: 1fr 1fr; } }
-
   .metric {
-    padding: 14px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    padding: 12px; background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 10px;
   }
-  .metric-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-  .metric-value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+  .metric-label {
+    font-size: 10.5px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .metric-value { font-size: 18px; font-weight: 700; margin-top: 3px; }
   .metric-value.p { color: var(--primary); }
   .metric-value.a { color: var(--accent); }
   .metric-value.w { color: var(--warning); }
   .metric-value.s { color: var(--success); }
 
-  .quiet { color: var(--text-muted); font-size: 12px; }
+  .quiet { color: var(--text-muted); font-size: 11.5px; }
 
-  /* Coming soon overlay */
-  .coming-soon-panel {
-    text-align: center;
-    padding: 80px 20px;
-  }
+  /* Coming soon panels */
+  .coming-soon-panel { text-align: center; padding: 70px 20px; }
   .coming-soon-panel .icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-    display: inline-block;
+    font-size: 44px; margin-bottom: 14px; display: inline-block;
     background: linear-gradient(135deg, var(--primary), var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .coming-soon-panel h2 { margin-bottom: 10px; }
+  .coming-soon-panel h2 { margin-bottom: 8px; }
+
+  /* Tx flow modal */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(5, 8, 15, 0.85);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    display: none;
+    align-items: center; justify-content: center;
+    animation: fadeIn 0.2s;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-2);
+    border-radius: 16px;
+    width: 900px; max-width: 95vw; max-height: 90vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .modal-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 15px; font-weight: 600; }
+  .modal-close {
+    color: var(--text-muted); font-size: 20px; padding: 2px 8px; border-radius: 4px;
+  }
+  .modal-close:hover { color: var(--text); background: var(--surface-2); }
+  .modal-body {
+    padding: 16px 20px; overflow-y: auto;
+    display: grid; grid-template-columns: 1fr 320px; gap: 16px;
+  }
+  @media (max-width: 780px) { .modal-body { grid-template-columns: 1fr; } }
+  #tx-flow-svg { width: 100%; height: 380px; }
+  .flow-log {
+    background: #05080f; border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; color: var(--text-muted);
+    overflow-y: auto;
+    max-height: 380px;
+  }
+  .flow-log .step {
+    padding: 6px 0; border-bottom: 1px dashed var(--border);
+    opacity: 0.3; transition: opacity 0.3s;
+  }
+  .flow-log .step.done { opacity: 1; color: var(--text); }
+  .flow-log .step.active {
+    opacity: 1;
+    color: var(--primary);
+    animation: blink 0.8s infinite;
+  }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+  .flow-log .step .num {
+    display: inline-block; width: 20px; height: 20px;
+    background: var(--surface-2); border-radius: 50%;
+    text-align: center; line-height: 20px; font-size: 10px; font-weight: 700;
+    margin-right: 8px;
+  }
+  .flow-log .step.done .num { background: var(--success); color: white; }
+  .flow-log .step.active .num { background: var(--primary); color: white; }
+  .flow-log .step .detail { display: block; color: var(--text-dim); font-size: 10px; margin-left: 28px; margin-top: 2px; }
+
+  .modal-actions {
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  /* Deploy / send form (compact) */
+  .form-row {
+    display: flex; gap: 6px; margin-bottom: 8px;
+  }
+  .form-row select, .form-row input {
+    flex: 1; padding: 6px 10px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 12px; color: var(--text); outline: none;
+  }
+  .form-row select:focus, .form-row input:focus { border-color: var(--primary); }
 
   /* Scrollbar */
   ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -793,8 +748,28 @@
   @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr; }
     .sidebar { position: relative; height: auto; top: 0; }
-    #network { height: 400px; }
+    #network { height: 460px; }
   }
+
+  /* Toast notification */
+  .toast-container {
+    position: fixed; top: 74px; right: 20px; z-index: 2000;
+    display: flex; flex-direction: column; gap: 6px;
+    pointer-events: none;
+  }
+  .toast {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    padding: 10px 14px; border-radius: 8px;
+    font-size: 12px; color: var(--text);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    animation: slideIn 0.25s;
+    pointer-events: auto;
+    max-width: 320px;
+  }
+  .toast.success { border-left-color: var(--success); }
+  .toast.warning { border-left-color: var(--warning); }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 </style>
 </head>
 
@@ -805,7 +780,7 @@
     <div class="brand-mark">◆</div>
     <div>
       <div class="brand-name">SharedChain</div>
-      <div class="brand-sub">One infrastructure. Many isolated projects.</div>
+      <div class="brand-sub">One shared infrastructure. Many isolated projects.</div>
     </div>
   </div>
   <nav class="menu">
@@ -824,7 +799,7 @@
 
 <div class="layout">
 
-  <!-- ========================= SIDEBAR ========================= -->
+  <!-- =========================== SIDEBAR =========================== -->
   <aside class="sidebar">
     <div class="sidebar-section">
       <h3>Base Layer · Shared Besu</h3>
@@ -833,9 +808,9 @@
           <span class="val" id="ft-val">2</span>
         </label>
         <input type="range" id="ft-slider" class="slider" min="1" max="4" value="2" step="1">
-        <div class="quiet" style="font-size:10px; margin-top:6px;">3f + 1 validators for BFT consensus</div>
+        <div class="quiet" style="font-size:10px; margin-top:5px;">3f + 1 validators for BFT consensus</div>
       </div>
-      <div class="stat-row" style="margin-bottom: 6px;">
+      <div class="stat-row">
         <span class="k">Total validators</span>
         <span class="v" id="besu-total">7</span>
       </div>
@@ -848,7 +823,7 @@
     <div class="sidebar-section">
       <h3>Projects (tenants)</h3>
       <div id="projects-list"></div>
-      <button class="btn btn-ghost btn-block" id="add-project" style="margin-top: 8px;">
+      <button class="btn btn-ghost btn-block" id="add-project" style="margin-top: 6px;">
         + Add project
       </button>
     </div>
@@ -856,29 +831,29 @@
     <div class="sidebar-section" id="pg-section">
       <h3>Privacy groups · <span id="selected-project-name" style="text-transform: none; letter-spacing: 0; color: var(--text);">Project A</span></h3>
       <div id="pg-list"></div>
-      <button class="btn btn-ghost btn-block" id="add-pg" style="margin-top: 8px;">
+      <button class="btn btn-ghost btn-block" id="add-pg" style="margin-top: 6px;">
         + New privacy group
       </button>
     </div>
 
     <div class="sidebar-section">
       <h3>Snapshot</h3>
-      <div class="metric-row" style="grid-template-columns: 1fr 1fr; gap: 6px;">
-        <div class="metric" style="padding: 10px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <div class="metric" style="padding: 9px;">
           <div class="metric-label">Projects</div>
-          <div class="metric-value p" id="s-projects" style="font-size:18px;">1</div>
+          <div class="metric-value p" id="s-projects" style="font-size:16px;">1</div>
         </div>
-        <div class="metric" style="padding: 10px;">
+        <div class="metric" style="padding: 9px;">
           <div class="metric-label">Paladin nodes</div>
-          <div class="metric-value a" id="s-nodes" style="font-size:18px;">3</div>
+          <div class="metric-value a" id="s-nodes" style="font-size:16px;">3</div>
         </div>
-        <div class="metric" style="padding: 10px;">
+        <div class="metric" style="padding: 9px;">
           <div class="metric-label">Privacy groups</div>
-          <div class="metric-value w" id="s-groups" style="font-size:18px;">0</div>
+          <div class="metric-value w" id="s-groups" style="font-size:16px;">1</div>
         </div>
-        <div class="metric" style="padding: 10px;">
-          <div class="metric-label">Isolation</div>
-          <div class="metric-value s" id="s-isolation" style="font-size:14px;">Node</div>
+        <div class="metric" style="padding: 9px;">
+          <div class="metric-label">Contracts</div>
+          <div class="metric-value s" id="s-contracts" style="font-size:16px;">0</div>
         </div>
       </div>
     </div>
@@ -890,32 +865,49 @@
     </div>
   </aside>
 
-  <!-- ========================= CANVAS ========================= -->
+  <!-- =========================== CANVAS =========================== -->
   <main class="canvas">
 
-    <!-- Menu = Pente panel (default) -->
+    <!-- Pente panel -->
     <div id="panel-pente">
       <div class="hero">
         <div class="kicker"><span class="dot"></span> Pente · Private EVM Domain</div>
         <h1>Design your Shared Blockchain topology</h1>
         <p class="subtitle">
-          Configure the shared Besu base layer, add tenants (projects), place their Paladin nodes,
-          and see privacy groups form in real time. Every element below is live.
+          Configure the shared Besu base layer on the left. Add tenants. Place Paladin nodes. Create privacy groups. Click any privacy group in the diagram to inspect it — deploy contracts, simulate private transactions, and watch what hits the base chain vs what stays inside the group.
         </p>
       </div>
 
-      <!-- Network visualization -->
-      <div class="network-container">
-        <div class="network-header">
-          <div class="network-title">Live network topology</div>
-          <div class="network-summary" id="network-summary"></div>
+      <div class="canvas-grid">
+        <!-- LEFT: Network visualization -->
+        <div class="network-container">
+          <div class="network-header">
+            <div class="network-title">
+              Live topology
+              <small>· click nodes and groups to inspect</small>
+            </div>
+            <div class="network-summary" id="network-summary"></div>
+          </div>
+          <svg id="network" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--besu-c);color:var(--besu-c);"></span> Besu validator</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--paladin-c);color:var(--paladin-c);"></span> Paladin node</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--pg-c);color:var(--pg-c);"></span> Privacy group</span>
+            <span class="legend-item"><span style="width:20px;height:2px;background:var(--text-dim);display:inline-block;"></span> RPC link</span>
+          </div>
         </div>
-        <svg id="network" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="legend">
-          <span class="legend-item"><span class="legend-dot" style="background:var(--besu-c);color:var(--besu-c);"></span> Besu validator</span>
-          <span class="legend-item"><span class="legend-dot" style="background:var(--paladin-c);color:var(--paladin-c);"></span> Paladin node</span>
-          <span class="legend-item"><span class="legend-dot" style="background:var(--pente-c);color:var(--pente-c);"></span> Privacy group</span>
-          <span class="legend-item"><span style="width:20px;height:2px;background:var(--text-dim);display:inline-block;"></span> RPC connection</span>
+
+        <!-- RIGHT: Inspector -->
+        <div class="inspector" id="inspector">
+          <div class="inspector-header">
+            <div class="inspector-title" id="inspector-title">
+              Inspector
+            </div>
+            <button class="btn btn-sm" id="inspector-back" style="display:none;">← Back</button>
+          </div>
+          <div class="inspector-body" id="inspector-body">
+            <!-- Populated by JS -->
+          </div>
         </div>
       </div>
 
@@ -933,7 +925,7 @@
         </nav>
         <div class="tab-body">
 
-          <!-- ============ Data segregation ============ -->
+          <!-- Data segregation -->
           <div class="tab-panel active" data-panel="segregation">
             <h2>Data segregation</h2>
             <p>Two layers of separation live inside one shared network.</p>
@@ -942,38 +934,38 @@
               <div class="card">
                 <h4>Within a tenant</h4>
                 <div class="big" style="color: var(--pente-c);">Privacy groups</div>
-                <p class="desc">Each smart contract sits in its own privacy group. Members list controls visibility. Unlimited groups per node.</p>
+                <p class="desc">Each private contract sits in its own privacy group. The members list controls visibility. Unlimited groups per Paladin node.</p>
               </div>
               <div class="card">
                 <h4>Across tenants</h4>
                 <div class="big" style="color: var(--paladin-c);">Node membership</div>
-                <p class="desc">Different tenants get different Paladin nodes. Non-member nodes never receive plaintext state — cryptographic isolation.</p>
+                <p class="desc">Different tenants get different Paladin nodes. Non-member nodes never receive plaintext state — Paladin's transport layer enforces cryptographic isolation.</p>
               </div>
               <div class="card">
                 <h4>From public observers</h4>
-                <div class="big" style="color: var(--besu-c);">On-chain commitments</div>
-                <p class="desc">Only opaque UTXO commitments hit Besu. Contract arguments, return values, events — none of it goes on the base chain.</p>
+                <div class="big" style="color: var(--besu-c);">Opaque commitments</div>
+                <p class="desc">Only opaque UTXO commitments hit the base Besu chain. Contract arguments, return values, and events never touch it.</p>
               </div>
             </div>
 
             <h3>Node hand-over (future migration)</h3>
-            <p>If a tenant leaves the shared platform, their Paladin node can be:</p>
+            <p>If a tenant needs to leave the shared platform, their Paladin node can be:</p>
             <ul class="list-clean">
-              <li><strong>Transferred</strong> to the tenant's own infrastructure. State replicates via reliable transport. Base chain reference remains valid.</li>
-              <li><strong>Retired</strong> — remove from privacy group membership, revoke keys, drop the pod.</li>
-              <li><strong>Cloned to backup</strong> — snapshot DB before archival for regulatory retention.</li>
+              <li><strong>Transferred</strong> to the tenant's own infrastructure. State replicates via reliable transport. Base-chain references stay valid.</li>
+              <li><strong>Retired</strong> — removed from privacy group membership, keys revoked, pod dropped.</li>
+              <li><strong>Cloned to backup</strong> — snapshot the DB before archival for regulatory retention.</li>
             </ul>
 
             <div class="callout warning">
               <div class="callout-title">Important limit today</div>
-              Sub-node isolation (multiple tenants sharing one Paladin node) is on the roadmap, not shipped. Today the isolation unit is the node. See the <a href="#" onclick="switchTab('decide'); return false;">decision panel</a> for what this means in practice.
+              Sub-node isolation (multiple tenants sharing one Paladin node with cryptographic separation) is on the roadmap, not shipped. Today the isolation unit is the Paladin node. Any identity resolvable on a member node can read/write the group's state.
             </div>
           </div>
 
-          <!-- ============ Token / domain matrix ============ -->
+          <!-- Token matrix -->
           <div class="tab-panel" data-panel="matrix">
             <h2>Which domain fits which use case?</h2>
-            <p>Pick what your project needs. Recommendation updates live.</p>
+            <p>Pick what your project needs. The recommendation updates live.</p>
 
             <div class="use-case-chips" id="uc-chips">
               <div class="chip" data-uc="privateEvm"><span class="icon">⚙</span> Private EVM logic</div>
@@ -1003,12 +995,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr><td class="strong">Model</td><td>Private EVM</td><td>ZK-token</td><td>Notary token</td></tr>
+                <tr><td class="strong">Model</td><td>Private EVM</td><td>ZK token</td><td>Notary token</td></tr>
                 <tr><td>Arbitrary Solidity logic</td><td class="ok">✓</td><td class="no">–</td><td class="no">–</td></tr>
                 <tr><td>Fungible / non-fungible tokens</td><td class="partial">via contracts</td><td class="ok">✓</td><td class="ok">✓</td></tr>
                 <tr><td>Zero-knowledge proofs</td><td class="no">–</td><td class="ok">✓</td><td class="no">–</td></tr>
                 <tr><td>Notary-endorsed transactions</td><td class="partial">endorsement group</td><td class="no">–</td><td class="ok">✓</td></tr>
-                <tr><td>Private events (emit)</td><td class="ok">✓ (in receipts)</td><td class="ok">✓</td><td class="ok">✓</td></tr>
+                <tr><td>Private events (Solidity emit)</td><td class="ok">✓ (in receipts)</td><td class="ok">✓</td><td class="ok">✓</td></tr>
                 <tr><td>Cross-domain atomic settlement</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
                 <tr><td>Ephemeral EVM per transaction</td><td class="ok">✓</td><td class="no">–</td><td class="no">–</td></tr>
                 <tr><td>Anonymity of participants</td><td class="no">–</td><td class="ok">✓</td><td class="no">–</td></tr>
@@ -1018,11 +1010,11 @@
 
             <div class="callout">
               <div class="callout-title">All three can co-exist</div>
-              A single privacy group can call across domains atomically. For example: a Pente contract can trigger a Zeto transfer as part of one bundled base-chain transaction.
+              A single Paladin network can host Pente, Zeto, and Noto side by side. A Pente contract can trigger a Zeto transfer atomically as part of one bundled base-chain transaction.
             </div>
           </div>
 
-          <!-- ============ L2 integration ============ -->
+          <!-- L2 -->
           <div class="tab-panel" data-panel="l2">
             <h2>Should we put an L2 in front of Besu?</h2>
             <p>Layer-2 rollups solve throughput and cost, not privacy. Combine them with Paladin only when the base workload actually demands it.</p>
@@ -1039,8 +1031,8 @@
               <div class="card">
                 <h4>Skip L2 when</h4>
                 <ul class="list-clean" style="margin: 0;">
-                  <li>Private-transaction volume dominates (all confidential work already happens in Paladin, not on chain)</li>
-                  <li>Predictable throughput matters more than raw peak TPS</li>
+                  <li>Private-transaction volume dominates (all confidential work already happens in Paladin, not on the chain)</li>
+                  <li>Predictable throughput matters more than peak TPS</li>
                   <li>Operational simplicity is a stronger driver than headline capacity</li>
                 </ul>
               </div>
@@ -1048,120 +1040,68 @@
 
             <h3>Reference topology with an L2</h3>
             <div class="flow-diagram">
-              <div class="flow-step">
-                <span class="num">1</span>
-                <div class="lbl">App</div>
-                <div class="desc">Calls Paladin RPC for private tx</div>
-              </div>
-              <div class="flow-step">
-                <span class="num">2</span>
-                <div class="lbl">Paladin</div>
-                <div class="desc">Executes in ephemeral EVM, endorses</div>
-              </div>
-              <div class="flow-step">
-                <span class="num">3</span>
-                <div class="lbl">Rollup sequencer</div>
-                <div class="desc">Batches UTXO commitments</div>
-              </div>
-              <div class="flow-step">
-                <span class="num">4</span>
-                <div class="lbl">L1 Besu</div>
-                <div class="desc">Anchors state roots + fraud/ZK proofs</div>
-              </div>
+              <div class="flow-step"><span class="num">1</span><div class="lbl">App</div><div class="desc">Calls Paladin RPC for private tx</div></div>
+              <div class="flow-step"><span class="num">2</span><div class="lbl">Paladin</div><div class="desc">Executes in ephemeral EVM, endorses</div></div>
+              <div class="flow-step"><span class="num">3</span><div class="lbl">Rollup sequencer</div><div class="desc">Batches UTXO commitments</div></div>
+              <div class="flow-step"><span class="num">4</span><div class="lbl">L1 Besu</div><div class="desc">Anchors state roots + fraud/ZK proofs</div></div>
             </div>
 
             <div class="callout warning">
               <div class="callout-title">Consideration</div>
-              A rollup adds a settlement delay and a new operational component. In a permissioned Besu network, most consolidation projects do not need one — Besu itself handles the volume when validators are sized correctly.
+              A rollup adds settlement delay and a new operational component. In a permissioned Besu, most consolidation projects do not need one — Besu handles the volume when validators are sized correctly.
             </div>
           </div>
 
-          <!-- ============ BCP / DR ============ -->
+          <!-- BCP -->
           <div class="tab-panel" data-panel="bcp">
             <h2>Business continuity &amp; disaster recovery</h2>
-            <p>Blockchain state is append-only. "Rollback" does not exist. Recovery is built into the application layer, backed by node redundancy at the infrastructure layer.</p>
+            <p>Blockchain state is append-only. "Rollback" does not exist. Recovery lives in the application layer, backed by node redundancy at the infrastructure layer.</p>
 
             <div class="metric-row">
-              <div class="metric">
-                <div class="metric-label">Node crash</div>
-                <div class="metric-value s">Auto-recover</div>
-              </div>
-              <div class="metric">
-                <div class="metric-label">DB corruption</div>
-                <div class="metric-value s">Resync</div>
-              </div>
-              <div class="metric">
-                <div class="metric-label">Bad on-chain data</div>
-                <div class="metric-value w">Compensate</div>
-              </div>
-              <div class="metric">
-                <div class="metric-label">All-member loss</div>
-                <div class="metric-value" style="color:var(--danger);">Off-chain backup</div>
-              </div>
+              <div class="metric"><div class="metric-label">Node crash</div><div class="metric-value s">Auto-recover</div></div>
+              <div class="metric"><div class="metric-label">DB corruption</div><div class="metric-value s">Resync</div></div>
+              <div class="metric"><div class="metric-label">Bad on-chain data</div><div class="metric-value w">Compensate</div></div>
+              <div class="metric"><div class="metric-label">All-member loss</div><div class="metric-value" style="color:var(--danger);">Off-chain backup</div></div>
             </div>
 
             <h3>Failure class → recovery pattern</h3>
             <table>
-              <thead>
-                <tr><th>Failure</th><th>Handled by</th><th>Recovery</th></tr>
-              </thead>
+              <thead><tr><th>Failure</th><th>Handled by</th><th>Recovery</th></tr></thead>
               <tbody>
                 <tr><td>Paladin process crashes</td><td>Infrastructure</td><td>Kubernetes restart, resume from local DB</td></tr>
-                <tr><td>Single node DB corruption</td><td>Infrastructure</td><td>Restore from snapshot or resync from peers</td></tr>
+                <tr><td>Single node DB corruption</td><td>Infrastructure</td><td>Restore snapshot or resync from peers</td></tr>
                 <tr><td>Regional / AZ outage</td><td>Infrastructure</td><td>Serve from secondary region member</td></tr>
                 <tr><td>Bad data written (wrong value)</td><td>Application</td><td>Governance-guarded compensating transaction</td></tr>
                 <tr><td>Contract bug</td><td>Application</td><td>Deploy new contract, migrate state via governance</td></tr>
-                <tr><td>Malicious identity</td><td>Application + Governance</td><td>Revoke access, rotate keys, compensate writes</td></tr>
+                <tr><td>Malicious identity</td><td>App + Governance</td><td>Revoke access, rotate keys, compensate writes</td></tr>
                 <tr><td>All member nodes lost simultaneously</td><td>Application (fallback)</td><td>Restore from off-Paladin encrypted backup</td></tr>
               </tbody>
             </table>
 
-            <h3>Minimum production topology per tenant</h3>
-            <div class="flow-diagram">
-              <div class="flow-step">
-                <span class="num">1</span>
-                <div class="lbl">Primary</div>
-                <div class="desc">Region A · AZ 1</div>
-              </div>
-              <div class="flow-step">
-                <span class="num">2</span>
-                <div class="lbl">Secondary</div>
-                <div class="desc">Region A · AZ 2</div>
-              </div>
-              <div class="flow-step">
-                <span class="num">3</span>
-                <div class="lbl">DR</div>
-                <div class="desc">Region B</div>
-              </div>
-            </div>
-            <p>Three member nodes, minimum two failure domains. Any two can serve reads. Any two can endorse. Losing any one is a routine event.</p>
-
             <div class="callout danger">
               <div class="callout-title">The one scenario infrastructure cannot save you from</div>
-              If every member node of a privacy group loses its DB at the same time (rare but possible: bad DR restore across the fleet), plaintext is unrecoverable. Base chain has only opaque commitments. For projects where this is material, application-managed off-Paladin encrypted backups are the answer.
+              If every member node of a privacy group loses its DB at the same time, plaintext is unrecoverable. The base chain has only opaque commitments. For projects where this is material, application-managed off-Paladin encrypted backups are the answer.
             </div>
           </div>
 
-          <!-- ============ Upgrades ============ -->
+          <!-- Upgrades -->
           <div class="tab-panel" data-panel="upgrades">
             <h2>Upgrades — tenant-specific vs platform-wide</h2>
             <p>Not every upgrade should hit every tenant on the same day. The platform team owns base upgrades. Tenants own their own application upgrades.</p>
 
             <table>
-              <thead>
-                <tr><th>Upgrade type</th><th>Owner</th><th>Cadence</th><th>Notes</th></tr>
-              </thead>
+              <thead><tr><th>Upgrade type</th><th>Owner</th><th>Cadence</th><th>Notes</th></tr></thead>
               <tbody>
                 <tr><td>Besu client version</td><td>Platform</td><td>Coordinated, quarterly</td><td>Rolling restart, one validator at a time</td></tr>
-                <tr><td>Paladin runtime</td><td>Platform</td><td>Coordinated, quarterly</td><td>Tested against staged tenant first</td></tr>
-                <tr><td>Domain plug-in (Pente / Noto / Zeto)</td><td>Platform</td><td>As released</td><td>Backward-compatible by policy</td></tr>
-                <tr><td>Smart contract logic</td><td>Tenant</td><td>Any time</td><td>Via governance-guarded proxy upgrade</td></tr>
+                <tr><td>Paladin runtime</td><td>Platform</td><td>Coordinated, quarterly</td><td>Tested against a staged tenant first</td></tr>
+                <tr><td>Domain plug-in</td><td>Platform</td><td>As released</td><td>Backward-compatible by policy</td></tr>
+                <tr><td>Smart contract logic</td><td>Tenant</td><td>Any time</td><td>Governance-guarded proxy upgrade</td></tr>
                 <tr><td>Application API / UI</td><td>Tenant</td><td>Any time</td><td>Off-chain, no coordination</td></tr>
                 <tr><td>Signing key rotation</td><td>Tenant</td><td>Policy-driven</td><td>Update key manager, re-register</td></tr>
               </tbody>
             </table>
 
-            <h3>Safe rolling upgrade for the shared Besu</h3>
+            <h3>Safe rolling upgrade of the shared Besu</h3>
             <div class="flow-diagram">
               <div class="flow-step"><span class="num">1</span><div class="lbl">Pin version</div><div class="desc">Freeze desired Besu image tag</div></div>
               <div class="flow-step"><span class="num">2</span><div class="lbl">Drain one</div><div class="desc">Take a single validator out of consensus</div></div>
@@ -1172,73 +1112,43 @@
 
             <div class="callout success">
               <div class="callout-title">The 3f+1 sizing pays off here</div>
-              With <span id="upgrade-total">7</span> validators and f=<span id="upgrade-f">2</span>, up to <span id="upgrade-tolerate">2</span> can be out simultaneously without stalling consensus. That gives comfortable room for rolling upgrades and unexpected failures at the same time.
+              With <span id="upgrade-total">7</span> validators and f=<span id="upgrade-f">2</span>, up to <span id="upgrade-tolerate">2</span> can be out simultaneously without stalling consensus. Comfortable room for rolling upgrades and unexpected failures.
             </div>
           </div>
 
-          <!-- ============ Release patterns ============ -->
+          <!-- Releases -->
           <div class="tab-panel" data-panel="releases">
             <h2>Release patterns that don't leak across tenants</h2>
             <p>Every pattern below preserves the guarantee: a change to tenant A's stack cannot break tenant B's.</p>
 
             <div class="card-grid">
-              <div class="card">
-                <h4>Canary tenant</h4>
-                <p class="desc">Nominate one non-production tenant that always receives platform upgrades first. Failures are contained to it.</p>
-              </div>
-              <div class="card">
-                <h4>Blue / green privacy groups</h4>
-                <p class="desc">Deploy the new contract into a new privacy group with the same members. Migrate state, verify, cut over, deprecate old group.</p>
-              </div>
-              <div class="card">
-                <h4>Feature flags in contracts</h4>
-                <p class="desc">Behaviour changes gated by governance-controlled flags. Roll out per tenant, roll back instantly if issues arise.</p>
-              </div>
-              <div class="card">
-                <h4>Shadow reads</h4>
-                <p class="desc">New logic runs alongside old, results compared off-chain. Only cut over when parity is proven.</p>
-              </div>
+              <div class="card"><h4>Canary tenant</h4><p class="desc">Nominate one non-production tenant that always receives platform upgrades first. Failures are contained.</p></div>
+              <div class="card"><h4>Blue / green privacy groups</h4><p class="desc">Deploy the new contract into a new privacy group with the same members. Migrate state, verify, cut over.</p></div>
+              <div class="card"><h4>Feature flags in contracts</h4><p class="desc">Behaviour changes gated by governance-controlled flags. Roll out per tenant, roll back instantly.</p></div>
+              <div class="card"><h4>Shadow reads</h4><p class="desc">New logic runs alongside old, results compared off-chain. Only cut over when parity is proven.</p></div>
             </div>
 
             <h3>Isolation guarantees during a release</h3>
             <ul class="list-clean">
               <li>Application contract upgrades are tenant-scoped. No other tenant's contract addresses change.</li>
-              <li>Platform upgrades are announced with a maintenance window. Tenants can pause their own writes if needed.</li>
-              <li>Rollback for smart contracts is <strong>never</strong> a state rewind — it is a governance action that deploys the previous version and migrates forward.</li>
-              <li>Cross-tenant atomic transactions are pinned to a specific base-chain contract version — upgrading the app does not invalidate historical bundles.</li>
+              <li>Platform upgrades are announced with a maintenance window. Tenants can pause writes if needed.</li>
+              <li>Rollback for smart contracts is never a state rewind — it is a governance action that deploys the previous version and migrates forward.</li>
+              <li>Cross-tenant atomic transactions are pinned to specific base-chain contract versions — upgrading the app does not invalidate historical bundles.</li>
             </ul>
           </div>
 
-          <!-- ============ Migration path ============ -->
+          <!-- Migration -->
           <div class="tab-panel" data-panel="migration">
             <h2>Migrating existing chains onto SharedChain</h2>
-            <p>Most consolidation programmes start with several disparate chains (Besu here, Corda there, Fabric somewhere else). The migration is phased, per project, and never a big-bang cutover.</p>
+            <p>Consolidation programmes typically start with several disparate chains. Migration is phased, per project, never a big-bang cutover.</p>
 
             <div class="flow-diagram">
-              <div class="flow-step">
-                <span class="num">1</span><div class="lbl">Inventory</div>
-                <div class="desc">Catalogue existing chains, contracts, participants, data volumes</div>
-              </div>
-              <div class="flow-step">
-                <span class="num">2</span><div class="lbl">Classify</div>
-                <div class="desc">Map each to a target domain (Pente / Zeto / Noto)</div>
-              </div>
-              <div class="flow-step">
-                <span class="num">3</span><div class="lbl">Pilot</div>
-                <div class="desc">Migrate the simplest project first, in parallel with the old system</div>
-              </div>
-              <div class="flow-step">
-                <span class="num">4</span><div class="lbl">Reconcile</div>
-                <div class="desc">Compare state end-to-end, resolve edge cases</div>
-              </div>
-              <div class="flow-step">
-                <span class="num">5</span><div class="lbl">Cut over</div>
-                <div class="desc">Freeze old, switch writes to SharedChain, retain old for audit</div>
-              </div>
-              <div class="flow-step">
-                <span class="num">6</span><div class="lbl">Retire</div>
-                <div class="desc">Archive old chain per retention policy, decommission infra</div>
-              </div>
+              <div class="flow-step"><span class="num">1</span><div class="lbl">Inventory</div><div class="desc">Catalogue existing chains, contracts, participants, data volumes</div></div>
+              <div class="flow-step"><span class="num">2</span><div class="lbl">Classify</div><div class="desc">Map each to a target domain (Pente / Zeto / Noto)</div></div>
+              <div class="flow-step"><span class="num">3</span><div class="lbl">Pilot</div><div class="desc">Migrate the simplest project first, in parallel with the old system</div></div>
+              <div class="flow-step"><span class="num">4</span><div class="lbl">Reconcile</div><div class="desc">Compare state end-to-end, resolve edge cases</div></div>
+              <div class="flow-step"><span class="num">5</span><div class="lbl">Cut over</div><div class="desc">Freeze old, switch writes to SharedChain, retain old for audit</div></div>
+              <div class="flow-step"><span class="num">6</span><div class="lbl">Retire</div><div class="desc">Archive old chain per retention policy, decommission infra</div></div>
             </div>
 
             <h3>Data migration approaches</h3>
@@ -1254,26 +1164,14 @@
 
             <h3>Effort estimate (illustrative)</h3>
             <div class="metric-row">
-              <div class="metric">
-                <div class="metric-label">Per project</div>
-                <div class="metric-value p">4–12 wks</div>
-              </div>
-              <div class="metric">
-                <div class="metric-label">Pilot project</div>
-                <div class="metric-value w">+ 4 wks</div>
-              </div>
-              <div class="metric">
-                <div class="metric-label">Platform build-out</div>
-                <div class="metric-value a">6–10 wks</div>
-              </div>
-              <div class="metric">
-                <div class="metric-label">Legacy retirement</div>
-                <div class="metric-value s">Async</div>
-              </div>
+              <div class="metric"><div class="metric-label">Per project</div><div class="metric-value p">4–12 wks</div></div>
+              <div class="metric"><div class="metric-label">Pilot project</div><div class="metric-value w">+ 4 wks</div></div>
+              <div class="metric"><div class="metric-label">Platform build-out</div><div class="metric-value a">6–10 wks</div></div>
+              <div class="metric"><div class="metric-label">Legacy retirement</div><div class="metric-value s">Async</div></div>
             </div>
           </div>
 
-          <!-- ============ Decision helper ============ -->
+          <!-- Decide -->
           <div class="tab-panel" data-panel="decide">
             <h2>Should this project use SharedChain?</h2>
             <p>Answer the four questions below. The recommendation updates automatically.</p>
@@ -1319,83 +1217,64 @@
               </div>
             </div>
 
-            <h3>What the three options look like</h3>
+            <h3>The three options at a glance</h3>
             <div class="card-grid">
-              <div class="card">
-                <h4>Shared (Option A)</h4>
-                <p class="desc">One shared Paladin node for all internal projects that already trust each other. Cheapest. Application-layer ACLs required.</p>
-              </div>
-              <div class="card">
-                <h4>Hybrid (Option B) — default</h4>
-                <p class="desc">Shared Besu, dedicated Paladin nodes per project. Cryptographic isolation between projects at low ops cost.</p>
-              </div>
-              <div class="card">
-                <h4>Dedicated (Option C)</h4>
-                <p class="desc">Separate Besu network per project. Strongest isolation. Reserved for regulator-segregated or ultra-sensitive workloads.</p>
-              </div>
+              <div class="card"><h4>Shared (Option A)</h4><p class="desc">One shared Paladin node for internal-only projects that already trust each other. Cheapest. Application-layer ACLs required.</p></div>
+              <div class="card"><h4>Hybrid (Option B) — default</h4><p class="desc">Shared Besu, dedicated Paladin nodes per project. Cryptographic isolation between projects at low ops cost.</p></div>
+              <div class="card"><h4>Dedicated (Option C)</h4><p class="desc">Separate Besu network per project. Strongest isolation. Reserved for regulator-segregated or ultra-sensitive workloads.</p></div>
             </div>
           </div>
 
-        </div><!-- /tab-body -->
-      </div><!-- /tabs -->
+        </div>
+      </div>
 
-      <p class="quiet" style="text-align: center; margin-top: 20px;">
+      <p class="quiet" style="text-align: center; margin-top: 16px;">
         SharedChain concept · Powered by Hyperledger Besu + Paladin ·
         <a href="https://github.com/parth5805/paladin-privacy-research" target="_blank">Research repo</a>
       </p>
     </div>
 
-    <!-- Coming soon panels for Zeto / Noto -->
+    <!-- Zeto -->
     <div id="panel-zeto" style="display:none;">
       <div class="coming-soon-panel">
         <div class="icon">◈</div>
         <h2>Zeto · Zero-Knowledge Tokens</h2>
-        <p style="max-width:500px; margin:0 auto 16px;">Coming soon in this interactive explainer. Zeto uses zero-knowledge proofs to keep participant identities and amounts confidential while still proving validity on-chain.</p>
+        <p style="max-width:520px; margin:0 auto 14px;">Coming soon in this interactive explainer. Zeto uses zero-knowledge proofs to hide participant identities and amounts while still proving validity on-chain.</p>
         <p><a href="#" onclick="switchMenu('pente'); return false;">← Back to Pente</a></p>
       </div>
     </div>
+    <!-- Noto -->
     <div id="panel-noto" style="display:none;">
       <div class="coming-soon-panel">
         <div class="icon">✎</div>
         <h2>Noto · Notary-Endorsed Tokens</h2>
-        <p style="max-width:500px; margin:0 auto 16px;">Coming soon in this interactive explainer. Noto uses a designated notary to endorse token movements, ideal for regulated asset issuance where a trusted authority validates each transfer.</p>
+        <p style="max-width:520px; margin:0 auto 14px;">Coming soon in this interactive explainer. Noto uses a designated notary to endorse token movements, ideal for regulated asset issuance where a trusted authority validates each transfer.</p>
         <p><a href="#" onclick="switchMenu('pente'); return false;">← Back to Pente</a></p>
       </div>
     </div>
+    <!-- Guide -->
     <div id="panel-guide" style="display:none;">
       <div class="hero">
         <div class="kicker"><span class="dot"></span> Reference</div>
-        <h1>SharedChain — What this demo is</h1>
-        <p class="subtitle">A single-file interactive explainer of a shared-blockchain platform pattern using Hyperledger Besu + Paladin. Configure the topology on the left, watch the network respond, read the tabs for context on the design decisions.</p>
+        <h1>SharedChain — what this demo is</h1>
+        <p class="subtitle">A single-file interactive explainer of a shared-blockchain platform pattern using Hyperledger Besu + Paladin. Configure the topology on the left, click any element in the diagram to inspect it, and read the tabs for design context.</p>
       </div>
 
       <div class="card-grid">
-        <div class="card">
-          <h4>Base layer</h4>
-          <p class="desc">Hyperledger Besu with 3f+1 validators for BFT consensus. Shared across all tenants.</p>
-        </div>
-        <div class="card">
-          <h4>Privacy layer</h4>
-          <p class="desc">Hyperledger Paladin. Adds ephemeral EVMs, privacy groups, and cross-domain atomicity on top of Besu.</p>
-        </div>
-        <div class="card">
-          <h4>Tenants</h4>
-          <p class="desc">Independent projects — each gets its own Paladin nodes, its own privacy groups, its own governance.</p>
-        </div>
-        <div class="card">
-          <h4>Interoperability</h4>
-          <p class="desc">Atomic bundling on the base chain lets separate privacy groups transact together without leaking state.</p>
-        </div>
+        <div class="card"><h4>Base layer</h4><p class="desc">Hyperledger Besu with 3f+1 validators for BFT consensus. Shared across all tenants.</p></div>
+        <div class="card"><h4>Privacy layer</h4><p class="desc">Hyperledger Paladin. Adds ephemeral EVMs, privacy groups, and cross-domain atomicity on top of Besu.</p></div>
+        <div class="card"><h4>Tenants</h4><p class="desc">Independent projects — each gets its own Paladin nodes, its own privacy groups, its own governance.</p></div>
+        <div class="card"><h4>Interoperability</h4><p class="desc">Atomic bundling on the base chain lets separate privacy groups transact together without leaking state.</p></div>
       </div>
 
-      <h3>Terminology cheat sheet</h3>
+      <h3>Terminology</h3>
       <table>
         <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
         <tbody>
           <tr><td class="strong">Besu</td><td>The base EVM chain. Public-within-the-network, opaque commitments only.</td></tr>
           <tr><td class="strong">Paladin</td><td>Privacy layer on top of Besu. Runs private EVMs (Pente), tokens (Noto, Zeto).</td></tr>
           <tr><td class="strong">Privacy group</td><td>An agreement between a set of Paladin nodes to share confidential state.</td></tr>
-          <tr><td class="strong">Ephemeral EVM</td><td>Fresh in-memory Besu EVM spun up per private transaction, then discarded.</td></tr>
+          <tr><td class="strong">Ephemeral EVM</td><td>A fresh in-memory Besu EVM spun up per private transaction, then discarded.</td></tr>
           <tr><td class="strong">Endorsement</td><td>Signed confirmation from member nodes that a private transaction is valid.</td></tr>
           <tr><td class="strong">UTXO commitment</td><td>Opaque hash that hits the base chain as proof of a private state transition.</td></tr>
           <tr><td class="strong">3f+1</td><td>The BFT consensus sizing rule. With f failures tolerated, you need 3f+1 validators.</td></tr>
@@ -1413,94 +1292,155 @@
   </main>
 </div>
 
-<script>
-/* ==========================================================================
-   State
-   ========================================================================== */
-const LS_KEY = 'sharedchain-demo-v1';
-const PROJECT_COLORS = ['#4d7cfe', '#7c5cff', '#00d4a7', '#ffb545', '#ff5c7a', '#5cb8ff', '#ff8a5c', '#c05cff'];
+<!-- =========================== TX FLOW MODAL =========================== -->
+<div class="modal-backdrop" id="tx-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="tx-modal-title">Simulating private transaction</div>
+      <button class="modal-close" id="tx-modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <svg id="tx-flow-svg" viewBox="0 0 560 380" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="flow-log" id="flow-log"></div>
+    </div>
+    <div class="modal-actions">
+      <div class="quiet" id="tx-modal-status">Ready</div>
+      <div>
+        <button class="btn" id="tx-modal-again" style="display:none;">Run again</button>
+        <button class="btn btn-primary" id="tx-modal-done" style="display:none;">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-let state = {
+<!-- Toast container -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+/* =============================================================================
+   State
+   ============================================================================= */
+const LS_KEY = 'sharedchain-demo-v2';
+const PROJECT_COLORS = ['#4d7cfe', '#7c5cff', '#00d4a7', '#ffb545', '#ff5c7a', '#5cb8ff', '#ff8a5c', '#c05cff'];
+const RPC_SUFFIXES = ['prod', 'core', 'edge', 'main', 'live', 'primary', 'us1', 'eu1', 'ap1'];
+
+let state = null;
+
+const DEFAULT_STATE = () => ({
   besu: { faultTolerance: 2 },
-  projects: [
-    { id: 'p1', name: 'Project Alpha', color: PROJECT_COLORS[0], paladinNodes: 3,
-      privacyGroups: [{ id: 'g1', name: 'Group-1', memberNodeIndices: [0, 1] }] },
-  ],
+  projects: [{
+    id: 'p1',
+    name: 'Project Alpha',
+    color: PROJECT_COLORS[0],
+    paladinNodes: 3,
+    privacyGroups: [{
+      id: 'g1',
+      name: 'Group-1',
+      memberNodeIndices: [0, 1],
+      contracts: [],
+      transactions: [],
+    }],
+  }],
   selectedProjectId: 'p1',
+  selection: { kind: null, groupId: null, contractId: null, nodeId: null }, // for inspector
   activeMenu: 'pente',
   activeTab: 'segregation',
-  useCases: {},         // matrix
-  decideAnswers: {},    // decision helper
-};
+  useCases: {},
+  decideAnswers: {},
+});
 
-function save() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){}
-}
+function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){} }
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      state = { ...state, ...parsed };
-    }
-  } catch(e){}
+    state = raw ? { ...DEFAULT_STATE(), ...JSON.parse(raw) } : DEFAULT_STATE();
+    // migration safety: ensure new fields exist
+    if (!state.selection) state.selection = { kind: null };
+    state.projects.forEach(p => p.privacyGroups.forEach(g => {
+      if (!g.contracts) g.contracts = [];
+      if (!g.transactions) g.transactions = [];
+    }));
+  } catch(e) { state = DEFAULT_STATE(); }
 }
-function reset() {
-  localStorage.removeItem(LS_KEY);
-  location.reload();
-}
+function resetAll() { localStorage.removeItem(LS_KEY); location.reload(); }
 
-/* ==========================================================================
-   Derived helpers
-   ========================================================================== */
+/* =============================================================================
+   Helpers
+   ============================================================================= */
 function besuNodeCount() { return 3 * state.besu.faultTolerance + 1; }
 function tolerates() { return state.besu.faultTolerance; }
-function totalPaladinNodes() {
-  return state.projects.reduce((s, p) => s + p.paladinNodes, 0);
+function totalPaladinNodes() { return state.projects.reduce((s, p) => s + p.paladinNodes, 0); }
+function totalPrivacyGroups() { return state.projects.reduce((s, p) => s + p.privacyGroups.length, 0); }
+function totalContracts() { return state.projects.reduce((s, p) => s + p.privacyGroups.reduce((ss, g) => ss + g.contracts.length, 0), 0); }
+function selectedProject() { return state.projects.find(p => p.id === state.selectedProjectId) || state.projects[0]; }
+function selectedGroup() {
+  if (!state.selection || state.selection.kind !== 'group') return null;
+  for (const p of state.projects) {
+    for (const g of p.privacyGroups) {
+      if (g.id === state.selection.groupId) return { project: p, group: g };
+    }
+  }
+  return null;
 }
-function totalPrivacyGroups() {
-  return state.projects.reduce((s, p) => s + p.privacyGroups.length, 0);
+function findGroupById(gid) {
+  for (const p of state.projects) {
+    for (const g of p.privacyGroups) if (g.id === gid) return { project: p, group: g };
+  }
+  return null;
 }
-function selectedProject() {
-  return state.projects.find(p => p.id === state.selectedProjectId) || state.projects[0];
+function generateId(prefix) { return prefix + '_' + Math.random().toString(36).slice(2, 8); }
+function shortAddr() {
+  // realistic-looking Ethereum-style address
+  const chars = '0123456789abcdef';
+  let s = '0x';
+  for (let i = 0; i < 40; i++) s += chars[Math.floor(Math.random() * 16)];
+  return s;
 }
-function generateId(prefix) {
-  return prefix + '_' + Math.random().toString(36).slice(2, 8);
+function shortHash(len) {
+  const chars = '0123456789abcdef';
+  let s = '0x';
+  for (let i = 0; i < (len || 64); i++) s += chars[Math.floor(Math.random() * 16)];
+  return s;
 }
-function randomRpcName(kind, idx) {
-  const suffixes = ['prod', 'core', 'edge', 'main', 'live', 'primary'];
-  return `${kind}-${idx}-${suffixes[idx % suffixes.length]}`;
-}
+function abbr(a, keep) { keep = keep || 4; return a.slice(0, keep + 2) + '…' + a.slice(-keep); }
+function nowTs() { const d = new Date(); return d.toTimeString().slice(0, 8); }
+function projectSlug(p) { return p.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 12) || 'project'; }
+function besuNodeName(i) { return `besu-v${i + 1}-${RPC_SUFFIXES[i % RPC_SUFFIXES.length]}`; }
+function paladinNodeName(p, i) { return `${projectSlug(p)}-paladin-${i + 1}`; }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-/* ==========================================================================
-   Render — sidebar
-   ========================================================================== */
-function renderSidebar() {
+/* =============================================================================
+   Render — sidebar (fixed: does not clobber the input the user is typing in)
+   ============================================================================= */
+function renderStats() {
   document.getElementById('ft-val').textContent = state.besu.faultTolerance;
   document.getElementById('ft-slider').value = state.besu.faultTolerance;
   document.getElementById('besu-total').textContent = besuNodeCount();
   document.getElementById('besu-tolerates').textContent = tolerates();
-
   document.getElementById('s-projects').textContent = state.projects.length;
   document.getElementById('s-nodes').textContent = totalPaladinNodes();
   document.getElementById('s-groups').textContent = totalPrivacyGroups();
-  document.getElementById('s-isolation').textContent = state.projects.length > 1 ? 'Node' : 'Group';
-
-  // upgrade tab dynamic numbers
+  document.getElementById('s-contracts').textContent = totalContracts();
   const uptot = document.getElementById('upgrade-total');
   if (uptot) uptot.textContent = besuNodeCount();
   const upf = document.getElementById('upgrade-f');
   if (upf) upf.textContent = state.besu.faultTolerance;
   const uptol = document.getElementById('upgrade-tolerate');
   if (uptol) uptol.textContent = state.besu.faultTolerance;
+}
 
-  // projects list
+function renderProjectsList() {
   const pl = document.getElementById('projects-list');
-  pl.innerHTML = state.projects.map((p, i) => `
+  // Preserve focus on any active input
+  const focusPid = document.activeElement && document.activeElement.matches('.project-name')
+    ? document.activeElement.dataset.pid : null;
+  const focusSelectionStart = focusPid ? document.activeElement.selectionStart : null;
+
+  pl.innerHTML = state.projects.map(p => `
     <div class="project-item ${p.id === state.selectedProjectId ? 'selected' : ''}" data-pid="${p.id}">
       <div class="project-header">
         <div class="project-color" style="background:${p.color};"></div>
-        <input class="project-name" value="${escapeHtml(p.name)}" data-pid="${p.id}">
+        <input class="project-name" value="${escapeHtml(p.name)}" data-pid="${p.id}" spellcheck="false">
         ${state.projects.length > 1 ? `<button class="project-remove" data-remove="${p.id}" title="Remove">✕</button>` : ''}
       </div>
       <div class="project-meta">
@@ -1518,42 +1458,51 @@ function renderSidebar() {
     </div>
   `).join('');
 
-  // privacy groups for selected project
+  // Restore focus
+  if (focusPid) {
+    const el = pl.querySelector(`.project-name[data-pid="${focusPid}"]`);
+    if (el) {
+      el.focus();
+      if (focusSelectionStart !== null) {
+        try { el.setSelectionRange(focusSelectionStart, focusSelectionStart); } catch(e){}
+      }
+    }
+  }
+}
+
+function renderPGList() {
   const sp = selectedProject();
   document.getElementById('selected-project-name').textContent = sp.name;
   const pg = document.getElementById('pg-list');
   if (sp.privacyGroups.length === 0) {
-    pg.innerHTML = `<div class="quiet" style="padding: 12px; text-align: center; border: 1px dashed var(--border); border-radius: 6px;">No privacy groups yet</div>`;
+    pg.innerHTML = `<div class="quiet" style="padding: 10px; text-align: center; border: 1px dashed var(--border); border-radius: 6px;">No privacy groups yet</div>`;
   } else {
     pg.innerHTML = sp.privacyGroups.map(g => `
-      <div class="privacy-group-item">
-        <div>
-          <div class="pg-name">${escapeHtml(g.name)}</div>
-          <div class="pg-meta">${g.memberNodeIndices.length} member node(s)</div>
+      <div class="project-item" data-gid="${g.id}" style="border-left: 3px solid var(--pg-c);">
+        <div class="project-header">
+          <div class="project-color" style="background: var(--pg-c);"></div>
+          <span style="flex:1; font-size: 12.5px; font-weight: 600;">${escapeHtml(g.name)}</span>
+          <button class="project-remove" data-remove-pg="${g.id}">✕</button>
         </div>
-        <button class="pg-remove" data-remove-pg="${g.id}">✕</button>
+        <div class="project-meta">
+          <span>${g.memberNodeIndices.length} member(s) · ${g.contracts.length} contract(s) · ${g.transactions.length} tx</span>
+        </div>
       </div>
     `).join('');
   }
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-/* ==========================================================================
-   Render — network SVG
-   ========================================================================== */
-const NET_W = 900, NET_H = 500;
+/* =============================================================================
+   Render — network SVG (with visible labels)
+   ============================================================================= */
+const NET_W = 900, NET_H = 560;
 const BESU_CENTER = { x: 450, y: 130 };
-const BESU_RADIUS = 90;
+const BESU_RADIUS = 88;
 
-function renderNetwork() {
-  const svg = document.getElementById('network');
+function computeLayout() {
   const n = besuNodeCount();
   const projects = state.projects;
 
-  // Compute Besu node positions (ring)
   const besuNodes = [];
   for (let i = 0; i < n; i++) {
     const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
@@ -1561,55 +1510,59 @@ function renderNetwork() {
       id: 'besu-' + i,
       x: BESU_CENTER.x + Math.cos(angle) * BESU_RADIUS,
       y: BESU_CENTER.y + Math.sin(angle) * BESU_RADIUS,
-      name: randomRpcName('besu', i + 1),
+      name: besuNodeName(i),
+      angle,
     });
   }
 
-  // Compute Paladin node positions (bottom half, per project)
-  const projectAreaTop = 300;
-  const projectAreaBottom = 470;
+  const projectAreaTop = 320;
   const totalWidth = NET_W - 60;
   const projectSpacing = totalWidth / projects.length;
   const paladinNodes = [];
   const projectBounds = [];
+
   projects.forEach((p, pi) => {
     const cx = 30 + projectSpacing * pi + projectSpacing / 2;
     const nodes = [];
-    const cols = Math.min(3, Math.ceil(Math.sqrt(p.paladinNodes)));
-    const rows = Math.ceil(p.paladinNodes / cols);
+    const cols = Math.min(3, Math.max(1, Math.ceil(Math.sqrt(p.paladinNodes))));
     for (let i = 0; i < p.paladinNodes; i++) {
       const row = Math.floor(i / cols);
       const col = i % cols;
-      const x = cx - (cols - 1) * 22 + col * 44;
-      const y = projectAreaTop + 20 + row * 44;
+      const x = cx - ((cols - 1) * 24) + col * 48;
+      const y = projectAreaTop + 24 + row * 52;
       nodes.push({
         id: `${p.id}-node-${i}`,
         projectId: p.id,
         idx: i,
         x, y,
-        name: `${p.name.replace(/[^a-zA-Z0-9]/g,'').toLowerCase()}-paladin-${i + 1}`,
+        name: paladinNodeName(p, i),
         color: p.color,
       });
     }
     paladinNodes.push(...nodes);
-    // bounding
     const xs = nodes.map(n => n.x);
     const ys = nodes.map(n => n.y);
-    const pad = 22;
+    const pad = 28;
     projectBounds.push({
       project: p,
       x1: Math.min(...xs) - pad,
       y1: Math.min(...ys) - pad,
       x2: Math.max(...xs) + pad,
       y2: Math.max(...ys) + pad,
-      cx: cx,
+      cx,
     });
   });
 
-  // Build SVG
+  return { besuNodes, paladinNodes, projectBounds };
+}
+
+function renderNetwork() {
+  const svg = document.getElementById('network');
+  const { besuNodes, paladinNodes, projectBounds } = computeLayout();
+  const n = besuNodes.length;
+
   const parts = [];
 
-  // defs
   parts.push(`
     <defs>
       <radialGradient id="besu-glow" cx="50%" cy="50%">
@@ -1621,62 +1574,46 @@ function renderNetwork() {
         <stop offset="100%" stop-color="#4d7cfe" stop-opacity="0"/>
       </radialGradient>
       <filter id="soft-glow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="3" result="glow"/>
-        <feMerge>
-          <feMergeNode in="glow"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
+        <feGaussianBlur stdDeviation="2.5" result="glow"/>
+        <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="strong-glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="4" result="glow"/>
+        <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
   `);
 
   // Besu cluster background
   parts.push(`
-    <ellipse cx="${BESU_CENTER.x}" cy="${BESU_CENTER.y}" rx="${BESU_RADIUS + 40}" ry="${BESU_RADIUS + 25}"
+    <ellipse cx="${BESU_CENTER.x}" cy="${BESU_CENTER.y}" rx="${BESU_RADIUS + 42}" ry="${BESU_RADIUS + 26}"
              fill="url(#besu-glow)" opacity="0.6"/>
-    <ellipse cx="${BESU_CENTER.x}" cy="${BESU_CENTER.y}" rx="${BESU_RADIUS + 20}" ry="${BESU_RADIUS + 10}"
+    <ellipse cx="${BESU_CENTER.x}" cy="${BESU_CENTER.y}" rx="${BESU_RADIUS + 22}" ry="${BESU_RADIUS + 12}"
              fill="none" stroke="rgba(255, 181, 69, 0.2)" stroke-width="1" stroke-dasharray="4 6"/>
-    <text x="${BESU_CENTER.x}" y="${BESU_CENTER.y - BESU_RADIUS - 30}" fill="#ffb545"
-          text-anchor="middle" font-size="12" font-weight="700" letter-spacing="1">
+    <text x="${BESU_CENTER.x}" y="${BESU_CENTER.y - BESU_RADIUS - 34}" fill="#ffb545"
+          text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1.5">
       SHARED BESU · ${n} VALIDATORS · TOLERATES ${state.besu.faultTolerance}
+    </text>
+    <text x="${BESU_CENTER.x}" y="${BESU_CENTER.y + 4}" fill="#c99a55"
+          text-anchor="middle" font-size="10" opacity="0.7" font-weight="600" letter-spacing="0.5">
+      QBFT · 3f+1
     </text>
   `);
 
-  // Project bounding boxes
+  // Project boxes
   projectBounds.forEach(pb => {
     parts.push(`
       <rect x="${pb.x1}" y="${pb.y1}" width="${pb.x2 - pb.x1}" height="${pb.y2 - pb.y1}"
             rx="12" fill="${pb.project.color}" fill-opacity="0.06"
-            stroke="${pb.project.color}" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="3 4"/>
-      <text x="${pb.cx}" y="${pb.y2 + 18}" fill="${pb.project.color}"
-            text-anchor="middle" font-size="11" font-weight="600">
-        ${escapeHtml(pb.project.name)}
+            stroke="${pb.project.color}" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="3 4"/>
+      <text x="${pb.cx}" y="${pb.y1 - 6}" fill="${pb.project.color}"
+            text-anchor="middle" font-size="11" font-weight="700" letter-spacing="0.5">
+        ${escapeHtml(pb.project.name.toUpperCase())}
       </text>
     `);
   });
 
-  // Privacy group bubbles
-  projects.forEach(p => {
-    p.privacyGroups.forEach((g, gi) => {
-      const members = g.memberNodeIndices
-        .map(i => paladinNodes.find(n => n.projectId === p.id && n.idx === i))
-        .filter(Boolean);
-      if (members.length === 0) return;
-      const cx = members.reduce((s, m) => s + m.x, 0) / members.length;
-      const cy = members.reduce((s, m) => s + m.y, 0) / members.length;
-      const r = Math.max(28, Math.max(...members.map(m => Math.hypot(m.x - cx, m.y - cy))) + 16);
-      parts.push(`
-        <circle cx="${cx}" cy="${cy}" r="${r}"
-                fill="rgba(124, 92, 255, 0.08)"
-                stroke="rgba(124, 92, 255, 0.4)" stroke-width="1"
-                stroke-dasharray="2 3"/>
-        <text x="${cx}" y="${cy - r - 4}" fill="#7c5cff" text-anchor="middle"
-              font-size="10" font-weight="600">${escapeHtml(g.name)}</text>
-      `);
-    });
-  });
-
-  // Connections: each paladin node to two nearest Besu nodes (RPC + backup)
+  // RPC lines (dimmer)
   paladinNodes.forEach(pn => {
     const nearest = [...besuNodes]
       .map(b => ({ b, d: Math.hypot(b.x - pn.x, b.y - pn.y) }))
@@ -1687,61 +1624,695 @@ function renderNetwork() {
       const midY = (pn.y + b.y) / 2 - 20;
       parts.push(`
         <path class="svg-link" d="M${pn.x},${pn.y} Q${midX},${midY} ${b.x},${b.y}"
-              stroke="${pn.color}" stroke-opacity="${i === 0 ? 0.4 : 0.2}"/>
+              stroke="${pn.color}" stroke-opacity="${i === 0 ? 0.35 : 0.15}"/>
       `);
     });
   });
 
-  // Besu nodes (draw last so they sit on top)
+  // Privacy group bubbles (drawn between RPC lines and nodes)
+  const selectedGid = state.selection && state.selection.kind === 'group' ? state.selection.groupId : null;
+  state.projects.forEach(p => {
+    p.privacyGroups.forEach(g => {
+      const members = g.memberNodeIndices
+        .map(i => paladinNodes.find(n => n.projectId === p.id && n.idx === i))
+        .filter(Boolean);
+      if (members.length === 0) return;
+      const cx = members.reduce((s, m) => s + m.x, 0) / members.length;
+      const cy = members.reduce((s, m) => s + m.y, 0) / members.length;
+      const r = Math.max(30, Math.max(...members.map(m => Math.hypot(m.x - cx, m.y - cy))) + 20);
+      const isSelected = g.id === selectedGid;
+      parts.push(`
+        <g class="svg-pg ${isSelected ? 'selected' : ''}" data-gid="${g.id}">
+          <circle cx="${cx}" cy="${cy}" r="${r}"
+                  fill="rgba(164, 139, 255, ${isSelected ? 0.14 : 0.08})"
+                  stroke="rgba(164, 139, 255, ${isSelected ? 0.9 : 0.4})"
+                  stroke-width="${isSelected ? 2 : 1}"
+                  stroke-dasharray="${isSelected ? '' : '2 3'}"/>
+          <text x="${cx}" y="${cy - r - 5}" fill="var(--pg-c)"
+                text-anchor="middle" font-size="10.5" font-weight="700">${escapeHtml(g.name)}</text>
+          ${g.contracts.length ? `<text x="${cx}" y="${cy - r + 8}" fill="var(--pg-c)" text-anchor="middle" font-size="9" opacity="0.75">${g.contracts.length} contract(s) · ${g.transactions.length} tx</text>` : ''}
+        </g>
+      `);
+    });
+  });
+
+  // Besu nodes
   besuNodes.forEach((b, i) => {
     parts.push(`
       <g class="svg-node" data-tip="Besu validator · ${b.name}">
-        <circle cx="${b.x}" cy="${b.y}" r="15" fill="url(#besu-glow)"/>
-        <circle cx="${b.x}" cy="${b.y}" r="9" fill="#ffb545" filter="url(#soft-glow)"/>
-        <circle cx="${b.x}" cy="${b.y}" r="9" fill="#ffb545"/>
-        <circle cx="${b.x}" cy="${b.y}" r="4" fill="#1a1408" opacity="0.4"/>
-        <text x="${b.x}" y="${b.y + 26}" fill="#c99a55" text-anchor="middle" font-size="9">v${i + 1}</text>
+        <circle cx="${b.x}" cy="${b.y}" r="14" fill="url(#besu-glow)"/>
+        <circle cx="${b.x}" cy="${b.y}" r="8" fill="#ffb545" filter="url(#soft-glow)"/>
+        <circle cx="${b.x}" cy="${b.y}" r="8" fill="#ffb545"/>
+        <circle cx="${b.x}" cy="${b.y}" r="3.5" fill="#1a1408" opacity="0.5"/>
+        <text x="${b.x}" y="${b.y + 22}" class="svg-label svg-label-strong" text-anchor="middle">v${i + 1}</text>
       </g>
     `);
   });
 
-  // Paladin nodes
+  // Paladin nodes + name labels
   paladinNodes.forEach(pn => {
     parts.push(`
-      <g class="svg-node" data-tip="Paladin node · ${pn.name}">
-        <circle cx="${pn.x}" cy="${pn.y}" r="12" fill="url(#paladin-glow)"/>
+      <g class="svg-node" data-tip="Paladin node · ${pn.name}" data-node-id="${pn.id}">
+        <circle cx="${pn.x}" cy="${pn.y}" r="11" fill="url(#paladin-glow)"/>
         <circle cx="${pn.x}" cy="${pn.y}" r="7" fill="${pn.color}" filter="url(#soft-glow)"/>
         <circle cx="${pn.x}" cy="${pn.y}" r="7" fill="${pn.color}"/>
-        <circle cx="${pn.x}" cy="${pn.y}" r="3" fill="#0a0e1a" opacity="0.4"/>
+        <circle cx="${pn.x}" cy="${pn.y}" r="2.5" fill="#0a0e1a" opacity="0.5"/>
+        <text x="${pn.x}" y="${pn.y + 20}" class="svg-label" text-anchor="middle" fill="${pn.color}">p${pn.idx + 1}</text>
       </g>
     `);
   });
 
   svg.innerHTML = parts.join('\n');
 
-  // Network summary
-  const nsum = document.getElementById('network-summary');
-  nsum.innerHTML = `
-    <span><span class="dot" style="background:var(--besu-c);"></span> ${n} validators</span>
-    <span><span class="dot" style="background:var(--paladin-c);"></span> ${totalPaladinNodes()} Paladin nodes</span>
-    <span><span class="dot" style="background:var(--pente-c);"></span> ${totalPrivacyGroups()} privacy groups</span>
-    <span><span class="dot" style="background:var(--success);"></span> ${state.projects.length} tenants</span>
-  `;
-
-  // hover tooltips (native title)
-  document.querySelectorAll('.svg-node').forEach(g => {
+  // Wire up group + node clicks
+  svg.querySelectorAll('.svg-pg').forEach(el => {
+    el.addEventListener('click', () => {
+      selectGroup(el.dataset.gid);
+    });
+  });
+  svg.querySelectorAll('.svg-node[data-node-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      selectNode(el.dataset.nodeId);
+    });
+  });
+  // Tooltips
+  svg.querySelectorAll('.svg-node').forEach(g => {
     const tip = g.dataset.tip;
-    if (!g.querySelector('title')) {
+    if (tip && !g.querySelector('title')) {
       const t = document.createElementNS('http://www.w3.org/2000/svg', 'title');
       t.textContent = tip;
       g.appendChild(t);
     }
   });
+
+  const nsum = document.getElementById('network-summary');
+  nsum.innerHTML = `
+    <span><span class="dot" style="background:var(--besu-c);"></span> ${n} validators</span>
+    <span><span class="dot" style="background:var(--paladin-c);"></span> ${totalPaladinNodes()} Paladin nodes</span>
+    <span><span class="dot" style="background:var(--pg-c);"></span> ${totalPrivacyGroups()} privacy groups</span>
+  `;
 }
 
-/* ==========================================================================
-   Matrix (use-case → domain recommendation)
-   ========================================================================== */
+/* =============================================================================
+   Inspector panel
+   ============================================================================= */
+function renderInspector() {
+  const title = document.getElementById('inspector-title');
+  const body = document.getElementById('inspector-body');
+  const backBtn = document.getElementById('inspector-back');
+  backBtn.style.display = state.selection && state.selection.kind ? '' : 'none';
+
+  if (!state.selection || !state.selection.kind) {
+    title.innerHTML = 'Inspector';
+    body.innerHTML = `
+      <div class="inspector-empty">
+        <div class="icon">◆</div>
+        <div style="font-size: 13px; color: var(--text); margin-bottom: 8px; font-weight: 600;">Click any element to inspect</div>
+        <div>Click a <span style="color:var(--pg-c);">privacy group bubble</span> to see its contracts and transactions.<br>Click a <span style="color:var(--paladin-c);">Paladin node</span> to see the groups it belongs to.</div>
+        <div style="margin-top: 24px; text-align: left;">
+          <div class="inspector-section">
+            <div class="inspector-section-head">Snapshot</div>
+            <div class="stat-row"><span class="k">Besu validators</span><span class="v">${besuNodeCount()}</span></div>
+            <div class="stat-row"><span class="k">Tenants</span><span class="v">${state.projects.length}</span></div>
+            <div class="stat-row"><span class="k">Paladin nodes</span><span class="v">${totalPaladinNodes()}</span></div>
+            <div class="stat-row"><span class="k">Privacy groups</span><span class="v">${totalPrivacyGroups()}</span></div>
+            <div class="stat-row"><span class="k">Contracts deployed</span><span class="v">${totalContracts()}</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  if (state.selection.kind === 'node') {
+    renderNodeInspector();
+    return;
+  }
+  if (state.selection.kind === 'group') {
+    renderGroupInspector();
+    return;
+  }
+}
+
+function renderNodeInspector() {
+  const title = document.getElementById('inspector-title');
+  const body = document.getElementById('inspector-body');
+  // find node
+  const nodeId = state.selection.nodeId;
+  const parts = nodeId.split('-node-');
+  const projectId = parts[0];
+  const idx = parseInt(parts[1], 10);
+  const project = state.projects.find(p => p.id === projectId);
+  if (!project) { state.selection = { kind: null }; renderInspector(); return; }
+  const nodeName = paladinNodeName(project, idx);
+
+  const memberOf = project.privacyGroups.filter(g => g.memberNodeIndices.includes(idx));
+  title.innerHTML = `<span class="pill" style="background: ${project.color}22; color: ${project.color};">Paladin Node</span> <span style="font-family: ui-monospace, monospace; font-size: 12px;">${nodeName}</span>`;
+
+  body.innerHTML = `
+    <div class="inspector-section">
+      <div class="inspector-section-head">Identity</div>
+      <div class="stat-row"><span class="k">Tenant</span><span class="v" style="color: ${project.color};">${escapeHtml(project.name)}</span></div>
+      <div class="stat-row"><span class="k">Node name</span><span class="v" style="font-family: ui-monospace, monospace; font-size: 11px;">${nodeName}</span></div>
+      <div class="stat-row"><span class="k">RPC URL</span><span class="v" style="font-family: ui-monospace, monospace; font-size: 10.5px;">https://${nodeName}:8548</span></div>
+    </div>
+
+    <div class="inspector-section">
+      <div class="inspector-section-head">Member of ${memberOf.length} privacy group(s)</div>
+      ${memberOf.length === 0 ? '<div class="quiet">Not a member of any group yet</div>' :
+        memberOf.map(g => `
+          <div class="contract-item" style="border-left: 3px solid var(--pg-c); cursor: pointer;" data-goto-gid="${g.id}">
+            <div class="name">${escapeHtml(g.name)}
+              <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">${g.contracts.length} contracts, ${g.transactions.length} tx</span>
+            </div>
+          </div>
+        `).join('')
+      }
+    </div>
+
+    <div class="inspector-section">
+      <div class="inspector-section-head">What this node stores</div>
+      <div class="callout" style="padding: 10px; margin: 6px 0;">
+        Full plaintext state for every privacy group this node is a member of. Any identity resolvable on this node can read/write that state.
+      </div>
+      <div class="stat-row"><span class="k">Approx storage</span><span class="v">${(memberOf.reduce((s, g) => s + g.transactions.length, 0) * 2 + 5)} KB</span></div>
+    </div>
+  `;
+
+  body.querySelectorAll('[data-goto-gid]').forEach(el => {
+    el.addEventListener('click', () => selectGroup(el.dataset.gotoGid));
+  });
+}
+
+function renderGroupInspector() {
+  const sel = selectedGroup();
+  if (!sel) { state.selection = { kind: null }; renderInspector(); return; }
+  const { project, group } = sel;
+  const title = document.getElementById('inspector-title');
+  const body = document.getElementById('inspector-body');
+
+  const memberNodeNames = group.memberNodeIndices.map(i => paladinNodeName(project, i));
+
+  title.innerHTML = `<span class="pill">Privacy Group</span> <span>${escapeHtml(group.name)}</span> <span class="quiet" style="font-family: ui-monospace, monospace; font-size: 10.5px;">${abbr(group.id, 3)}</span>`;
+
+  body.innerHTML = `
+    <!-- Members -->
+    <div class="inspector-section">
+      <div class="inspector-section-head">
+        Member Paladin nodes (${memberNodeNames.length})
+      </div>
+      <div>
+        ${memberNodeNames.map(n => `
+          <span class="member-chip">
+            <span class="avatar" style="background: ${project.color};">P</span>
+            ${escapeHtml(n)}
+          </span>
+        `).join('')}
+      </div>
+      <div class="quiet" style="margin-top: 6px; font-size: 10.5px;">
+        Toggle membership from below. Base chain contract:
+        <span style="font-family: ui-monospace, monospace;">${abbr(shortAddrDeterministic(group.id), 4)}</span>
+      </div>
+      <div style="margin-top: 6px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+          ${Array.from({ length: project.paladinNodes }, (_, i) => {
+            const on = group.memberNodeIndices.includes(i);
+            return `<button class="chip ${on ? 'selected' : ''}" data-toggle-member="${i}" style="font-size: 10px; padding: 4px 8px;">p${i + 1}</button>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Contracts -->
+    <div class="inspector-section">
+      <div class="inspector-section-head">
+        <span>Private contracts (${group.contracts.length})</span>
+        <button class="btn btn-sm" id="deploy-contract-btn">+ Deploy</button>
+      </div>
+      ${group.contracts.length === 0 ? '<div class="quiet" style="padding: 8px; border: 1px dashed var(--border); border-radius: 6px; text-align: center;">No contracts yet — click Deploy</div>' :
+        group.contracts.map(c => `
+          <div class="contract-item">
+            <div class="name">
+              <span>${escapeHtml(c.name)}</span>
+              <span style="font-family: ui-monospace, monospace; font-size: 10px; color: var(--text-muted);">${abbr(c.address, 3)}</span>
+            </div>
+            <div class="state">
+              <b>Current state:</b> value = ${c.value !== undefined ? c.value : 'not set'}<br>
+              Deployed by ${escapeHtml(c.deployedBy || memberNodeNames[0])}
+            </div>
+            <div style="margin-top: 8px; display: flex; gap: 4px;">
+              <button class="btn btn-sm btn-primary" data-send-tx="${c.id}" style="flex: 1;">Send private tx →</button>
+            </div>
+          </div>
+        `).join('')
+      }
+    </div>
+
+    <!-- Transactions -->
+    <div class="inspector-section">
+      <div class="inspector-section-head">Recent private transactions (${group.transactions.length})</div>
+      ${group.transactions.length === 0 ? '<div class="quiet" style="padding: 8px; border: 1px dashed var(--border); border-radius: 6px; text-align: center;">No transactions yet</div>' :
+        `<div class="tx-log">
+          ${group.transactions.slice().reverse().slice(0, 8).map(tx => `
+            <div class="line private">
+              <span class="ts">${tx.timestamp}</span>
+              <span class="tag private">PRIVATE</span>
+              <b>${escapeHtml(tx.contractName)}</b>.${escapeHtml(tx.fn)}(${escapeHtml(String(tx.arg))}) by ${escapeHtml(tx.from)}
+              <div style="margin-left: 60px; margin-top: 2px; color: var(--text-dim);">
+                Besu commit: ${abbr(tx.besuTxHash, 4)} · block ${tx.besuBlock}
+              </div>
+            </div>
+          `).join('')}
+        </div>`
+      }
+    </div>
+
+    <!-- Split view -->
+    <div class="inspector-section">
+      <div class="inspector-section-head">What Besu vs Paladin members see</div>
+      <div class="split">
+        <div class="split-panel public">
+          <h5><span style="width: 8px; height: 8px; background: var(--besu-c); border-radius: 50%; display: inline-block;"></span> BASE BESU (PUBLIC)</h5>
+          <div class="content">
+            ${group.transactions.length === 0
+              ? '<div class="empty">No commitments yet. Send a transaction to see.</div>'
+              : group.transactions.slice().reverse().slice(0, 3).map(tx => `
+                  <div>tx <b>${abbr(tx.besuTxHash, 3)}</b></div>
+                  <div>&nbsp;&nbsp;spend [${abbr(tx.utxoIn, 2)}]</div>
+                  <div>&nbsp;&nbsp;create [${abbr(tx.utxoOut, 2)}]</div>
+                  <div>&nbsp;&nbsp;+ endorsement proof</div>
+                  <br>
+                `).join('')
+            }
+          </div>
+        </div>
+        <div class="split-panel private">
+          <h5><span style="width: 8px; height: 8px; background: var(--pg-c); border-radius: 50%; display: inline-block;"></span> PALADIN MEMBERS (PRIVATE)</h5>
+          <div class="content">
+            ${group.contracts.length === 0
+              ? '<div class="empty">Deploy a contract to see state.</div>'
+              : group.contracts.map(c => `
+                  <div><b>${escapeHtml(c.name)}</b> @ ${abbr(c.address, 2)}</div>
+                  <div>&nbsp;&nbsp;value = <b>${c.value !== undefined ? c.value : '?'}</b></div>
+                  <div>&nbsp;&nbsp;logs = ${(c.eventCount || 0)} event(s)</div>
+                  <br>
+                `).join('')
+            }
+          </div>
+        </div>
+      </div>
+      <div class="quiet" style="margin-top: 6px; font-size: 10.5px;">
+        The public chain sees only opaque hashes. Only member nodes hold the plaintext state, events, and contract code.
+      </div>
+    </div>
+  `;
+
+  // wire up buttons
+  body.querySelectorAll('[data-toggle-member]').forEach(el => {
+    el.addEventListener('click', () => toggleMember(group.id, parseInt(el.dataset.toggleMember, 10)));
+  });
+  const dep = body.querySelector('#deploy-contract-btn');
+  if (dep) dep.addEventListener('click', () => deployContract(group.id));
+  body.querySelectorAll('[data-send-tx]').forEach(el => {
+    el.addEventListener('click', () => sendPrivateTx(group.id, el.dataset.sendTx));
+  });
+}
+
+// Deterministic-ish address for a group id (just for display)
+function shortAddrDeterministic(id) {
+  // hash-like: convert id chars to hex chunks
+  const chars = '0123456789abcdef';
+  let s = '0x';
+  for (let i = 0; i < 40; i++) {
+    const c = id.charCodeAt(i % id.length) || 0;
+    s += chars[(c + i * 7) % 16];
+  }
+  return s;
+}
+
+/* =============================================================================
+   Actions
+   ============================================================================= */
+function addProject() {
+  const idx = state.projects.length + 1;
+  const p = {
+    id: generateId('p'),
+    name: `Project ${String.fromCharCode(64 + idx)}`,
+    color: PROJECT_COLORS[(idx - 1) % PROJECT_COLORS.length],
+    paladinNodes: 2,
+    privacyGroups: [],
+  };
+  state.projects.push(p);
+  state.selectedProjectId = p.id;
+  state.selection = { kind: null };
+  save(); renderAll();
+  toast(`Added ${p.name} with 2 Paladin nodes`);
+}
+function removeProject(pid) {
+  if (state.projects.length <= 1) return;
+  state.projects = state.projects.filter(p => p.id !== pid);
+  if (state.selectedProjectId === pid) state.selectedProjectId = state.projects[0].id;
+  state.selection = { kind: null };
+  save(); renderAll();
+}
+function changeProjectNodes(pid, delta) {
+  const p = state.projects.find(x => x.id === pid);
+  if (!p) return;
+  const newN = Math.max(1, Math.min(9, p.paladinNodes + delta));
+  if (newN === p.paladinNodes) return;
+  p.paladinNodes = newN;
+  p.privacyGroups.forEach(g => {
+    g.memberNodeIndices = g.memberNodeIndices.filter(i => i < p.paladinNodes);
+  });
+  save(); renderAll();
+}
+function renameProject(pid, name) {
+  const p = state.projects.find(x => x.id === pid);
+  if (!p) return;
+  p.name = name || 'Untitled';
+  save();
+  // Do NOT re-render the projects list here — that would kill focus.
+  // Only update dependent things:
+  document.getElementById('selected-project-name').textContent = selectedProject().name;
+  renderNetwork();
+  renderInspector();
+}
+function addPrivacyGroup() {
+  const sp = selectedProject();
+  if (!sp) return;
+  const nextNum = sp.privacyGroups.length + 1;
+  const memberIndices = sp.paladinNodes >= 2 ? [0, 1] : [0];
+  sp.privacyGroups.push({
+    id: generateId('g'),
+    name: `Group-${nextNum}`,
+    memberNodeIndices: memberIndices,
+    contracts: [],
+    transactions: [],
+  });
+  save(); renderAll();
+  toast(`Added privacy group in ${sp.name}`);
+}
+function removePrivacyGroup(gid) {
+  state.projects.forEach(p => {
+    p.privacyGroups = p.privacyGroups.filter(g => g.id !== gid);
+  });
+  if (state.selection && state.selection.groupId === gid) state.selection = { kind: null };
+  save(); renderAll();
+}
+function toggleMember(gid, idx) {
+  const found = findGroupById(gid);
+  if (!found) return;
+  const { group } = found;
+  if (group.memberNodeIndices.includes(idx)) {
+    if (group.memberNodeIndices.length <= 1) { toast('A privacy group needs at least one member', 'warning'); return; }
+    group.memberNodeIndices = group.memberNodeIndices.filter(i => i !== idx);
+  } else {
+    group.memberNodeIndices.push(idx);
+    group.memberNodeIndices.sort((a, b) => a - b);
+  }
+  save(); renderAll();
+}
+function selectGroup(gid) {
+  state.selection = { kind: 'group', groupId: gid };
+  save();
+  renderNetwork();
+  renderInspector();
+}
+function selectNode(nodeId) {
+  state.selection = { kind: 'node', nodeId };
+  save();
+  renderNetwork();
+  renderInspector();
+}
+function clearSelection() {
+  state.selection = { kind: null };
+  save();
+  renderNetwork();
+  renderInspector();
+}
+
+const CONTRACT_TEMPLATES = [
+  { name: 'Storage', desc: 'A simple uint256 setter/getter — good baseline for testing', fn: 'store', arg: () => Math.floor(Math.random() * 9000) + 1000 },
+  { name: 'Ledger', desc: 'Tracks balances per identity', fn: 'transfer', arg: () => Math.floor(Math.random() * 500) + 10 },
+  { name: 'Vault', desc: 'Time-locked value custody', fn: 'lock', arg: () => Math.floor(Math.random() * 30) + 1 },
+  { name: 'Registry', desc: 'Key-value registry, member-only writes', fn: 'set', arg: () => 'v-' + Math.random().toString(36).slice(2,6) },
+];
+
+function deployContract(gid) {
+  const found = findGroupById(gid);
+  if (!found) return;
+  const { project, group } = found;
+  const template = CONTRACT_TEMPLATES[group.contracts.length % CONTRACT_TEMPLATES.length];
+  const c = {
+    id: generateId('c'),
+    name: `${template.name}-${group.contracts.length + 1}`,
+    template: template.name,
+    address: shortAddr(),
+    value: undefined,
+    eventCount: 0,
+    deployedBy: paladinNodeName(project, group.memberNodeIndices[0]),
+  };
+  group.contracts.push(c);
+  // A deployment also produces a besu commitment
+  group.transactions.push({
+    id: generateId('tx'),
+    timestamp: nowTs(),
+    contractId: c.id,
+    contractName: c.name,
+    fn: 'deploy',
+    arg: '(constructor)',
+    from: c.deployedBy,
+    besuTxHash: shortHash(64),
+    besuBlock: 1000 + group.transactions.length,
+    utxoIn: shortHash(32),
+    utxoOut: shortHash(32),
+  });
+  save(); renderAll();
+  toast(`Deployed ${c.name} into ${group.name}`, 'success');
+}
+
+function sendPrivateTx(gid, contractId) {
+  const found = findGroupById(gid);
+  if (!found) return;
+  const { project, group } = found;
+  const contract = group.contracts.find(c => c.id === contractId);
+  if (!contract) return;
+  const template = CONTRACT_TEMPLATES.find(t => t.name === contract.template);
+  const arg = template ? template.arg() : Math.floor(Math.random() * 100);
+  const fromNode = paladinNodeName(project, group.memberNodeIndices[Math.floor(Math.random() * group.memberNodeIndices.length)]);
+  openTxModal({
+    project, group, contract, template, arg, fromNode,
+  });
+}
+
+/* =============================================================================
+   Transaction flow modal — animated
+   ============================================================================= */
+let currentTx = null;
+
+function openTxModal(ctx) {
+  currentTx = ctx;
+  document.getElementById('tx-modal').classList.add('open');
+  document.getElementById('tx-modal-title').textContent =
+    `Simulate: ${ctx.contract.name}.${ctx.template.fn}(${ctx.arg})`;
+  document.getElementById('tx-modal-status').textContent = 'Running…';
+  document.getElementById('tx-modal-again').style.display = 'none';
+  document.getElementById('tx-modal-done').style.display = 'none';
+  renderTxFlowSvg(ctx, 0);
+  runTxFlow(ctx);
+}
+
+function closeTxModal() {
+  document.getElementById('tx-modal').classList.remove('open');
+  currentTx = null;
+}
+
+// steps: index -> { title, detail, kind: 'private'|'public' }
+function txSteps(ctx) {
+  const memberNodeNames = ctx.group.memberNodeIndices.map(i => paladinNodeName(ctx.project, i));
+  const otherMembers = memberNodeNames.filter(n => n !== ctx.fromNode);
+  return [
+    { title: 'Application submits pgroup_sendTransaction', detail: `from: ${ctx.fromNode}, fn: ${ctx.template.fn}(${ctx.arg})`, kind: 'private' },
+    { title: `Paladin node prepares the transaction`, detail: 'lookup group members, resolve identity, wrap payload', kind: 'private' },
+    { title: 'Ephemeral EVM spins up (in memory)', detail: `fresh Besu EVM, loads state for contract ${ctx.contract.name}`, kind: 'private' },
+    { title: 'Executes bytecode', detail: `runs ${ctx.template.fn}(${ctx.arg}) → new state + logs`, kind: 'private' },
+    { title: `Requests endorsement from ${otherMembers.length} peer member(s)`, detail: otherMembers.join(', ') || 'no other members', kind: 'private' },
+    { title: 'Peers independently re-execute and sign', detail: 'each peer verifies the same result, returns endorsement sig', kind: 'private' },
+    { title: 'Base-chain commit', detail: 'submits UTXO transition + endorsement proof to shared Besu', kind: 'public' },
+    { title: 'State distribution to member nodes only', detail: 'plaintext state + events replicated to member DBs', kind: 'private' },
+    { title: 'Non-member nodes see NOTHING plaintext', detail: 'they only see opaque UTXO commit on Besu', kind: 'public' },
+  ];
+}
+
+async function runTxFlow(ctx) {
+  const steps = txSteps(ctx);
+  const log = document.getElementById('flow-log');
+  log.innerHTML = steps.map((s, i) => `
+    <div class="step" data-step="${i}">
+      <span class="num">${i + 1}</span><b>${escapeHtml(s.title)}</b>
+      <span class="detail">${escapeHtml(s.detail)}</span>
+    </div>
+  `).join('');
+
+  for (let i = 0; i < steps.length; i++) {
+    log.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+    const cur = log.querySelector(`[data-step="${i}"]`);
+    if (cur) {
+      cur.classList.add('active');
+      cur.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    renderTxFlowSvg(ctx, i + 1);
+    await sleep(650);
+    if (!currentTx) return; // cancelled
+    if (cur) { cur.classList.remove('active'); cur.classList.add('done'); }
+  }
+
+  // finalize: mutate real state
+  const contract = ctx.contract;
+  contract.value = ctx.arg;
+  contract.eventCount = (contract.eventCount || 0) + 1;
+  ctx.group.transactions.push({
+    id: generateId('tx'),
+    timestamp: nowTs(),
+    contractId: contract.id,
+    contractName: contract.name,
+    fn: ctx.template.fn,
+    arg: ctx.arg,
+    from: ctx.fromNode,
+    besuTxHash: shortHash(64),
+    besuBlock: 1000 + ctx.group.transactions.length,
+    utxoIn: shortHash(32),
+    utxoOut: shortHash(32),
+  });
+  save();
+  renderInspector();
+  renderNetwork();
+  renderStats();
+
+  document.getElementById('tx-modal-status').innerHTML = `<span style="color: var(--success);">✓ Committed</span> · new value: <b>${ctx.arg}</b>`;
+  document.getElementById('tx-modal-again').style.display = '';
+  document.getElementById('tx-modal-done').style.display = '';
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* Simple TX flow diagram in the modal */
+function renderTxFlowSvg(ctx, step) {
+  const svg = document.getElementById('tx-flow-svg');
+  const memberNames = ctx.group.memberNodeIndices.map(i => paladinNodeName(ctx.project, i));
+  const primary = { x: 100, y: 90, name: ctx.fromNode };
+  const peers = memberNames.filter(n => n !== ctx.fromNode).map((n, i, arr) => ({
+    x: 320 + (i - (arr.length - 1) / 2) * 90, y: 90, name: n,
+  }));
+  const besu = { x: 100, y: 260, name: 'Shared Besu' };
+  const evm = { x: 200, y: 90, name: 'Ephemeral EVM' };
+
+  const parts = [];
+  parts.push(`
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,0 L10,5 L0,10 Z" fill="#7c5cff"/>
+      </marker>
+      <marker id="arr-y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,0 L10,5 L0,10 Z" fill="#ffb545"/>
+      </marker>
+    </defs>
+    <text x="20" y="20" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">PRIVATE ZONE (Paladin members)</text>
+    <line x1="20" y1="180" x2="540" y2="180" stroke="#26304a" stroke-dasharray="3 4"/>
+    <text x="20" y="200" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">PUBLIC ZONE (Base Besu)</text>
+  `);
+
+  // Application box (upper-left)
+  parts.push(`
+    <rect x="20" y="60" width="60" height="30" rx="5" fill="#1a2340" stroke="#26304a"/>
+    <text x="50" y="80" fill="#e6e9f2" text-anchor="middle" font-size="10">App</text>
+  `);
+
+  // Primary paladin node
+  parts.push(`
+    <circle cx="${primary.x}" cy="${primary.y}" r="14" fill="#4d7cfe" filter="url(#soft-glow)"/>
+    <text x="${primary.x}" y="${primary.y + 30}" fill="#e6e9f2" text-anchor="middle" font-size="9" font-family="ui-monospace, monospace">${primary.name}</text>
+    <text x="${primary.x}" y="${primary.y - 22}" fill="#8a94ad" text-anchor="middle" font-size="9">Coordinator</text>
+  `);
+
+  // Ephemeral EVM
+  if (step >= 3) {
+    parts.push(`
+      <rect x="${evm.x - 32}" y="${evm.y - 15}" width="64" height="30" rx="5"
+            fill="rgba(0, 212, 167, 0.15)" stroke="var(--success)" stroke-dasharray="3 3"
+            ${step === 3 ? 'style="animation: pulse 1s infinite;"' : ''}/>
+      <text x="${evm.x}" y="${evm.y + 5}" fill="var(--success)" text-anchor="middle" font-size="9" font-weight="600">EVM (temp)</text>
+    `);
+  }
+
+  // Peer nodes
+  peers.forEach(pe => {
+    parts.push(`
+      <circle cx="${pe.x}" cy="${pe.y}" r="11" fill="#4d7cfe"/>
+      <text x="${pe.x}" y="${pe.y + 26}" fill="#e6e9f2" text-anchor="middle" font-size="9" font-family="ui-monospace, monospace">${pe.name}</text>
+      <text x="${pe.x}" y="${pe.y - 18}" fill="#8a94ad" text-anchor="middle" font-size="9">Endorser</text>
+    `);
+  });
+
+  // Besu
+  parts.push(`
+    <ellipse cx="${besu.x}" cy="${besu.y}" rx="55" ry="26"
+             fill="rgba(255, 181, 69, 0.1)" stroke="var(--besu-c)" stroke-width="1.5"/>
+    <text x="${besu.x}" y="${besu.y + 4}" fill="var(--besu-c)" text-anchor="middle" font-size="11" font-weight="700">Shared Besu</text>
+    <text x="${besu.x}" y="${besu.y + 20}" fill="var(--besu-c)" text-anchor="middle" font-size="8" opacity="0.7">${besuNodeCount()} validators</text>
+  `);
+
+  // Non-member node
+  parts.push(`
+    <circle cx="470" cy="260" r="11" fill="#5c667f" opacity="0.5"/>
+    <text x="470" y="286" fill="#5c667f" text-anchor="middle" font-size="9" font-family="ui-monospace, monospace">non-member</text>
+    <text x="470" y="242" fill="#5c667f" text-anchor="middle" font-size="9">Sees only hashes</text>
+  `);
+
+  // Arrows based on step
+  if (step >= 1) {
+    // App -> primary
+    parts.push(`<path d="M80,75 L${primary.x - 14},${primary.y}" stroke="#7c5cff" fill="none" marker-end="url(#arr)"/>`);
+  }
+  if (step >= 3) {
+    // primary -> EVM
+    parts.push(`<path d="M${primary.x + 14},${primary.y} L${evm.x - 32},${evm.y}" stroke="#7c5cff" fill="none" marker-end="url(#arr)"/>`);
+  }
+  if (step >= 5) {
+    // primary -> peers (endorsement)
+    peers.forEach(pe => {
+      parts.push(`<path d="M${primary.x + 14},${primary.y} L${pe.x - 11},${pe.y}" stroke="#7c5cff" fill="none" opacity="0.8" marker-end="url(#arr)"/>`);
+    });
+  }
+  if (step >= 6) {
+    // peers -> primary (endorsement responses, dashed)
+    peers.forEach(pe => {
+      parts.push(`<path d="M${pe.x - 11},${pe.y + 6} L${primary.x + 14},${primary.y + 6}" stroke="#00d4a7" fill="none" stroke-dasharray="3 3" opacity="0.8"/>`);
+    });
+  }
+  if (step >= 7) {
+    // primary -> Besu (commit)
+    parts.push(`<path d="M${primary.x},${primary.y + 14} L${besu.x},${besu.y - 26}" stroke="#ffb545" fill="none" stroke-width="2" marker-end="url(#arr-y)"/>`);
+    parts.push(`<text x="${(primary.x + besu.x) / 2 + 10}" y="${(primary.y + besu.y) / 2 - 5}" fill="#ffb545" font-size="9" font-weight="600">UTXO commit</text>`);
+  }
+  if (step >= 8) {
+    // primary -> peers (state distribution, private)
+    peers.forEach(pe => {
+      parts.push(`<path d="M${primary.x + 14},${primary.y - 6} L${pe.x - 11},${pe.y - 6}" stroke="#7c5cff" fill="none" stroke-dasharray="2 3" opacity="0.7"/>`);
+    });
+    parts.push(`<text x="${(primary.x + peers[0]?.x || 300) / 2}" y="65" fill="#7c5cff" font-size="9" font-weight="600">plaintext state</text>`);
+  }
+  if (step >= 9) {
+    // Besu -> non-member (public view)
+    parts.push(`<path d="M${besu.x + 55},${besu.y} L${460},${260}" stroke="#ffb545" fill="none" opacity="0.5" stroke-dasharray="4 4"/>`);
+  }
+
+  svg.innerHTML = parts.join('\n');
+}
+
+/* =============================================================================
+   Matrix + Decide
+   ============================================================================= */
 function renderMatrixRecommendation() {
   const uc = state.useCases;
   const anyPicked = Object.values(uc).some(v => v);
@@ -1755,8 +2326,6 @@ function renderMatrixRecommendation() {
       </div>`;
     return;
   }
-
-  // Scoring
   const scores = { pente: 0, zeto: 0, noto: 0 };
   if (uc.privateEvm) scores.pente += 3;
   if (uc.fungible) { scores.zeto += 2; scores.noto += 2; scores.pente += 1; }
@@ -1774,7 +2343,6 @@ function renderMatrixRecommendation() {
     zeto: 'Zero-knowledge is the differentiator here. Zeto conceals participants and amounts while still proving validity to the network.',
     noto: 'A designated notary endorses each move. Ideal when a trusted authority must sign off on every transfer for regulatory reasons.',
   }[chosen];
-
   const scoreBar = (name, val, max) => `
     <div style="margin-bottom: 4px;">
       <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted);">
@@ -1785,7 +2353,6 @@ function renderMatrixRecommendation() {
       </div>
     </div>`;
   const max = Math.max(1, ...Object.values(scores));
-
   rec.innerHTML = `
     <div class="rec-icon" style="background: ${color};">${chosen === 'pente' ? '⚙' : chosen === 'zeto' ? '◈' : '✎'}</div>
     <div style="flex:1;">
@@ -1797,9 +2364,6 @@ function renderMatrixRecommendation() {
     </div>`;
 }
 
-/* ==========================================================================
-   Decision helper
-   ========================================================================== */
 function renderDecideResult() {
   const a = state.decideAnswers;
   const rec = document.getElementById('decide-result');
@@ -1813,17 +2377,16 @@ function renderDecideResult() {
       </div>`;
     return;
   }
-
   let choice, title, body;
   if (a.reg === 'yes') {
     choice = 'C'; title = 'Option C — Dedicated Besu + Paladin';
-    body = 'Regulatory segregation is strict. Give this project its own Besu network and its own Paladin fleet. Cross-project atomic settlement will need a bridge if it ever becomes a requirement.';
+    body = 'Regulatory segregation is strict. Give this project its own Besu network and its own Paladin fleet. Cross-project atomic settlement would need a bridge if it ever becomes a requirement.';
   } else if (a.ext === 'yes') {
     choice = 'B'; title = 'Option B — Hybrid (shared Besu, dedicated Paladin per project)';
     body = 'External counterparties need cryptographic isolation from other projects. Put this project on the shared Besu but with its own Paladin nodes. Atomic interop across projects still native.';
   } else if (a.reg === 'soft') {
     choice = 'B'; title = 'Option B — Hybrid';
-    body = 'Isolation is preferred though not mandated. The hybrid option gives it cheaply — dedicated Paladin nodes on the shared Besu — while keeping interop and ops cost low.';
+    body = 'Isolation is preferred though not mandated. The hybrid option gives it cheaply — dedicated Paladin nodes on shared Besu — while keeping interop and ops cost low.';
   } else if (a.ttm === 'fast' && a.ext === 'no' && a.reg === 'no') {
     choice = 'A'; title = 'Option A — Shared';
     body = 'Internal-only, no strict segregation, short time-to-market. The shared node is fine. Enforce identity ACLs at the application layer and log every action for audit.';
@@ -1831,7 +2394,6 @@ function renderDecideResult() {
     choice = 'B'; title = 'Option B — Hybrid (default)';
     body = 'Default to hybrid when in doubt. Cryptographic project isolation at only a small marginal cost over Option A. Easy to consolidate later if sub-node privacy ships upstream.';
   }
-
   const colors = { A: 'var(--success)', B: 'var(--primary)', C: 'var(--warning)' };
   rec.innerHTML = `
     <div class="rec-icon" style="background: ${colors[choice]};">${choice}</div>
@@ -1842,66 +2404,9 @@ function renderDecideResult() {
     </div>`;
 }
 
-/* ==========================================================================
-   Actions
-   ========================================================================== */
-function addProject() {
-  const idx = state.projects.length + 1;
-  const p = {
-    id: generateId('p'),
-    name: `Project ${String.fromCharCode(64 + idx)}`,
-    color: PROJECT_COLORS[(idx - 1) % PROJECT_COLORS.length],
-    paladinNodes: 2,
-    privacyGroups: [],
-  };
-  state.projects.push(p);
-  state.selectedProjectId = p.id;
-  save(); renderAll();
-}
-function removeProject(pid) {
-  if (state.projects.length <= 1) return;
-  state.projects = state.projects.filter(p => p.id !== pid);
-  if (state.selectedProjectId === pid) state.selectedProjectId = state.projects[0].id;
-  save(); renderAll();
-}
-function changeProjectNodes(pid, delta) {
-  const p = state.projects.find(x => x.id === pid);
-  if (!p) return;
-  p.paladinNodes = Math.max(1, Math.min(9, p.paladinNodes + delta));
-  // clean up privacy groups referencing removed nodes
-  p.privacyGroups.forEach(g => {
-    g.memberNodeIndices = g.memberNodeIndices.filter(i => i < p.paladinNodes);
-  });
-  save(); renderAll();
-}
-function renameProject(pid, name) {
-  const p = state.projects.find(x => x.id === pid);
-  if (!p) return;
-  p.name = name || 'Untitled';
-  save(); renderAll();
-}
-function addPrivacyGroup() {
-  const sp = selectedProject();
-  if (!sp) return;
-  const nextNum = sp.privacyGroups.length + 1;
-  const memberIndices = sp.paladinNodes >= 2 ? [0, 1] : [0];
-  sp.privacyGroups.push({
-    id: generateId('g'),
-    name: `Group-${nextNum}`,
-    memberNodeIndices: memberIndices,
-  });
-  save(); renderAll();
-}
-function removePrivacyGroup(gid) {
-  const sp = selectedProject();
-  if (!sp) return;
-  sp.privacyGroups = sp.privacyGroups.filter(g => g.id !== gid);
-  save(); renderAll();
-}
-
-/* ==========================================================================
+/* =============================================================================
    Menu / tab switching
-   ========================================================================== */
+   ============================================================================= */
 function switchMenu(menu) {
   state.activeMenu = menu;
   document.querySelectorAll('.menu button').forEach(b => b.classList.toggle('active', b.dataset.menu === menu));
@@ -1918,73 +2423,93 @@ function switchTab(tab) {
   save();
 }
 
-/* ==========================================================================
-   Wire up
-   ========================================================================== */
+/* =============================================================================
+   Toast
+   ============================================================================= */
+function toast(msg, kind) {
+  const c = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = 'toast' + (kind ? ' ' + kind : '');
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 2600);
+}
+
+/* =============================================================================
+   Master render
+   ============================================================================= */
 function renderAll() {
-  renderSidebar();
+  renderStats();
+  renderProjectsList();
+  renderPGList();
   renderNetwork();
+  renderInspector();
   renderMatrixRecommendation();
   renderDecideResult();
 }
 
+/* =============================================================================
+   Wire up
+   ============================================================================= */
 document.addEventListener('DOMContentLoaded', () => {
   load();
-  // fault tolerance slider
+
   document.getElementById('ft-slider').addEventListener('input', e => {
     state.besu.faultTolerance = parseInt(e.target.value, 10);
-    save(); renderAll();
+    save();
+    renderStats();
+    renderNetwork();
   });
-  // add project
   document.getElementById('add-project').addEventListener('click', addProject);
-  // add pg
   document.getElementById('add-pg').addEventListener('click', addPrivacyGroup);
-  // reset
   document.getElementById('reset-all').addEventListener('click', () => {
-    if (confirm('Reset the topology to defaults? Your current setup will be lost.')) reset();
+    if (confirm('Reset topology to defaults? Your current setup will be lost.')) resetAll();
   });
 
-  // Delegated: projects list interactions
-  document.getElementById('projects-list').addEventListener('click', e => {
+  // Projects list (delegated)
+  const pl = document.getElementById('projects-list');
+  pl.addEventListener('click', e => {
+    if (e.target.matches('[data-remove]')) { e.stopPropagation(); removeProject(e.target.dataset.remove); return; }
+    if (e.target.matches('[data-delta]')) { e.stopPropagation(); changeProjectNodes(e.target.dataset.pid, parseInt(e.target.dataset.delta, 10)); return; }
     const item = e.target.closest('.project-item');
-    if (e.target.matches('[data-remove]')) {
-      e.stopPropagation();
-      removeProject(e.target.dataset.remove);
-      return;
-    }
-    if (e.target.matches('[data-delta]')) {
-      e.stopPropagation();
-      changeProjectNodes(e.target.dataset.pid, parseInt(e.target.dataset.delta, 10));
-      return;
-    }
     if (item && !e.target.matches('input')) {
       state.selectedProjectId = item.dataset.pid;
-      save(); renderAll();
+      save();
+      renderProjectsList();
+      renderPGList();
     }
   });
-  document.getElementById('projects-list').addEventListener('input', e => {
+  // Rename: only save and update dependent parts on 'input', never re-render this list until blur
+  pl.addEventListener('input', e => {
+    if (e.target.matches('.project-name')) renameProject(e.target.dataset.pid, e.target.value);
+  });
+  pl.addEventListener('blur', e => {
     if (e.target.matches('.project-name')) {
-      renameProject(e.target.dataset.pid, e.target.value);
+      // On blur we can safely re-render the list (colours, etc.)
+      renderProjectsList();
     }
+  }, true);
+
+  // PG list (delegated)
+  const pgl = document.getElementById('pg-list');
+  pgl.addEventListener('click', e => {
+    if (e.target.matches('[data-remove-pg]')) { e.stopPropagation(); removePrivacyGroup(e.target.dataset.removePg); return; }
+    const item = e.target.closest('.project-item[data-gid]');
+    if (item) selectGroup(item.dataset.gid);
   });
 
-  // pg list interactions
-  document.getElementById('pg-list').addEventListener('click', e => {
-    if (e.target.matches('[data-remove-pg]')) removePrivacyGroup(e.target.dataset.removePg);
-  });
-
-  // top menu
+  // Menu
   document.querySelectorAll('.menu button[data-menu]').forEach(b => {
     b.addEventListener('click', () => { if (!b.disabled) switchMenu(b.dataset.menu); });
   });
 
-  // tabs
+  // Tabs
   document.getElementById('tab-nav').addEventListener('click', e => {
     const b = e.target.closest('button[data-tab]');
     if (b) switchTab(b.dataset.tab);
   });
 
-  // use case chips
+  // Use case chips
   document.getElementById('uc-chips').addEventListener('click', e => {
     const chip = e.target.closest('.chip');
     if (!chip) return;
@@ -1994,13 +2519,12 @@ document.addEventListener('DOMContentLoaded', () => {
     save();
     renderMatrixRecommendation();
   });
-  // seed initial chip states after render
   Object.entries(state.useCases).forEach(([k, v]) => {
     const c = document.querySelector(`.chip[data-uc="${k}"]`);
     if (c && v) c.classList.add('selected');
   });
 
-  // decide chips
+  // Decide chips
   document.getElementById('decide-form').addEventListener('click', e => {
     const chip = e.target.closest('.decide-chip');
     if (!chip) return;
@@ -2011,18 +2535,37 @@ document.addEventListener('DOMContentLoaded', () => {
     save();
     renderDecideResult();
   });
-  // seed decide chips
   Object.entries(state.decideAnswers).forEach(([k, v]) => {
     const c = document.querySelector(`.decide-chip[data-key="${k}"][data-val="${v}"]`);
     if (c) c.classList.add('selected');
   });
 
-  // initial state
+  // Inspector back
+  document.getElementById('inspector-back').addEventListener('click', clearSelection);
+
+  // Tx modal
+  document.getElementById('tx-modal-close').addEventListener('click', closeTxModal);
+  document.getElementById('tx-modal-done').addEventListener('click', closeTxModal);
+  document.getElementById('tx-modal-again').addEventListener('click', () => {
+    if (!currentTx) return;
+    const ctx = currentTx;
+    const template = ctx.template;
+    ctx.arg = template.arg();
+    document.getElementById('tx-modal-title').textContent =
+      `Simulate: ${ctx.contract.name}.${template.fn}(${ctx.arg})`;
+    document.getElementById('tx-modal-status').textContent = 'Running…';
+    document.getElementById('tx-modal-again').style.display = 'none';
+    document.getElementById('tx-modal-done').style.display = 'none';
+    runTxFlow(ctx);
+  });
+  document.getElementById('tx-modal').addEventListener('click', e => {
+    if (e.target.id === 'tx-modal') closeTxModal();
+  });
+
   switchMenu(state.activeMenu || 'pente');
   switchTab(state.activeTab || 'segregation');
   renderAll();
 });
 </script>
-
 </body>
 </html>
