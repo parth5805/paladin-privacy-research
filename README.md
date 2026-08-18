@@ -2,6 +2,8 @@
 
 Independent technical research into the privacy model of [Hyperledger Paladin](https://github.com/LFDT-Paladin/paladin) — an Apache-2.0 privacy layer for EVM chains built on Hyperledger Besu.
 
+> **AI collaborators:** load [`.github/copilot-instructions.md`](.github/copilot-instructions.md) (auto-loaded by Copilot Chat) or [`AGENTS.md`](AGENTS.md) before making changes. Those files carry the shared context — sensitivity rules, demo state model, known gotchas that must not be undone, and the verification workflow.
+
 Everything here is **verified against a live cluster** running Paladin v1.0.0 (released 2026-06-25), the current stable release. Where behaviour changed over time, the timeline is documented with commit hashes, PR numbers, and quotes from the maintainers.
 
 ---
