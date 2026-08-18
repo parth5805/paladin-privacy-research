@@ -802,6 +802,252 @@
     .network-wrapper { min-height: 560px; }
   }
 
+  /* Display-option check rows in sidebar */
+  .check-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    margin-bottom: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: all 0.12s;
+    user-select: none;
+  }
+  .check-row:hover { border-color: var(--primary); }
+  .check-row input {
+    accent-color: var(--primary);
+    cursor: pointer;
+    width: 13px; height: 13px;
+    flex-shrink: 0;
+  }
+  .quiet-inline {
+    color: var(--text-dim);
+    font-size: 10px;
+    margin-left: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* BCP sidebar buttons (one per project) */
+  .bcp-project-btn {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 7px 10px;
+    margin-bottom: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    border-radius: 6px;
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+    text-align: left;
+    color: var(--text);
+  }
+  .bcp-project-btn:hover {
+    border-color: var(--danger);
+    background: rgba(255, 92, 122, 0.06);
+  }
+  .bcp-project-btn .dot {
+    width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0;
+  }
+  .bcp-project-btn .lbl {
+    flex: 1; font-weight: 600;
+  }
+  .bcp-project-btn .go {
+    color: var(--text-dim); font-size: 14px;
+    transition: transform 0.15s, color 0.15s;
+  }
+  .bcp-project-btn:hover .go { color: var(--danger); transform: translateX(3px); }
+  #bcp-besu-btn {
+    border-color: var(--besu-c);
+    color: var(--besu-c);
+  }
+  #bcp-besu-btn:hover {
+    background: rgba(255, 181, 69, 0.08);
+    color: var(--warning);
+  }
+
+  /* BCP modal — larger than tx modal, has left sidebar for scenarios */
+  .bcp-modal {
+    width: 1080px; max-width: 96vw;
+    max-height: 92vh;
+    display: flex; flex-direction: column;
+  }
+  .bcp-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: linear-gradient(180deg, rgba(255, 92, 122, 0.08) 0%, transparent 100%);
+  }
+  .bcp-header .title {
+    font-size: 15px; font-weight: 600;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .bcp-header .shield {
+    display: inline-grid; place-items: center;
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--danger), var(--warning));
+    border-radius: 7px; font-size: 15px;
+  }
+  .bcp-header .scope-pill {
+    font-size: 10px; padding: 3px 8px; border-radius: 4px;
+    background: var(--surface-2); color: var(--text-muted);
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    font-family: ui-monospace, monospace;
+  }
+
+  .bcp-body {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    overflow: hidden;
+    flex: 1;
+  }
+  @media (max-width: 800px) {
+    .bcp-body { grid-template-columns: 1fr; }
+  }
+  .bcp-scenarios {
+    background: var(--surface-2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 10px;
+  }
+  .bcp-scenario {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 4px;
+    border-left: 3px solid transparent;
+  }
+  .bcp-scenario:hover { background: var(--surface-3); }
+  .bcp-scenario.active {
+    background: rgba(77, 124, 254, 0.1);
+    border-left-color: var(--primary);
+  }
+  .bcp-scenario .sev-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 6px; flex-shrink: 0;
+  }
+  .bcp-scenario .sev-dot.low { background: var(--success); box-shadow: 0 0 6px var(--success); }
+  .bcp-scenario .sev-dot.med { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+  .bcp-scenario .sev-dot.high { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+  .bcp-scenario .s-title { font-size: 12.5px; font-weight: 600; margin-bottom: 2px; }
+  .bcp-scenario .s-meta {
+    font-size: 10px; color: var(--text-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .bcp-scenario .s-tag {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    background: var(--surface);
+    color: var(--text-dim);
+  }
+  .bcp-scenario .s-tag.must { background: rgba(255, 92, 122, 0.18); color: var(--danger); }
+  .bcp-scenario .s-tag.should { background: rgba(255, 181, 69, 0.18); color: var(--warning); }
+  .bcp-scenario .s-tag.could { background: rgba(0, 212, 167, 0.18); color: var(--success); }
+
+  .bcp-detail {
+    padding: 18px 22px;
+    overflow-y: auto;
+    min-width: 0;
+  }
+  .bcp-detail h3.bcp-scenario-title {
+    font-size: 16px; margin: 0 0 4px;
+  }
+  .bcp-detail .bcp-summary {
+    color: var(--text-muted); font-size: 12.5px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .bcp-detail h4 {
+    font-size: 10.5px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin: 16px 0 6px; font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .bcp-detail h4::before {
+    content: ''; width: 3px; height: 11px;
+    background: var(--danger); border-radius: 2px;
+  }
+
+  /* Recovery timeline */
+  .bcp-timeline { list-style: none; padding: 0; margin: 6px 0; }
+  .bcp-timeline li {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 12px;
+  }
+  .bcp-timeline li:last-child { border-bottom: none; }
+  .bcp-timeline .t { color: var(--warning); font-family: ui-monospace, monospace; font-size: 10.5px; padding-top: 2px; }
+  .bcp-timeline .a { color: var(--text); }
+  .bcp-timeline .a b { color: var(--primary); }
+
+  /* Ownership chips */
+  .own-row {
+    display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .own-chip {
+    padding: 3px 8px; font-size: 10.5px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-family: ui-monospace, monospace;
+  }
+  .own-chip.infra { border-color: var(--paladin-c); color: var(--paladin-c); }
+  .own-chip.app { border-color: var(--pg-c); color: var(--pg-c); }
+  .own-chip.gov { border-color: var(--warning); color: var(--warning); }
+  .own-chip.ops { border-color: var(--success); color: var(--success); }
+
+  /* BCP mini-diagram (SVG inside modal, shows failure impact) */
+  .bcp-diagram {
+    background: #05080f;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 8px 0;
+  }
+  .bcp-diagram svg { width: 100%; height: 200px; display: block; }
+
+  /* Grey-out overlay on the main topology when BCP modal is open */
+  .canvas.bcp-focused .network-container {
+    filter: grayscale(0.9) brightness(0.35);
+    transition: filter 0.35s ease;
+    pointer-events: none;
+  }
+  .canvas .network-container {
+    transition: filter 0.35s ease;
+  }
+
+  /* Ground-truth reference block */
+  .bcp-truth {
+    background: rgba(0, 212, 167, 0.06);
+    border: 1px solid rgba(0, 212, 167, 0.3);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 10px 0;
+    font-size: 11.5px;
+  }
+  .bcp-truth b { color: var(--success); }
+  .bcp-truth code {
+    background: rgba(0, 212, 167, 0.1);
+    padding: 1px 5px; border-radius: 3px;
+    font-size: 10.5px;
+    color: var(--text);
+  }
+
   /* Toast */
   .toast-container {
     position: fixed; top: 74px; right: 20px; z-index: 2000;
@@ -886,6 +1132,39 @@
       </button>
       <button class="btn btn-ghost btn-block" id="add-cross-pg" style="margin-top: 4px; font-size: 11px;">
         + Cross-project privacy group
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Display in topology</h3>
+      <label class="check-row">
+        <input type="checkbox" data-display="showDatabases">
+        <span>Storage engines <span class="quiet-inline">Postgres · RocksDB</span></span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" data-display="showProtocolLabels">
+        <span>Protocol labels <span class="quiet-inline">JSON-RPC · QBFT · member</span></span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" data-display="showRpc">
+        <span>Paladin → Besu RPC curves</span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" data-display="showP2p">
+        <span>Besu consensus rails <span class="quiet-inline">P2P + block markers</span></span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" data-display="showPgLinks">
+        <span>Privacy group ↔ member lines</span>
+      </label>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Business continuity (BCP / DR)</h3>
+      <div class="quiet" style="margin-bottom: 6px;">Simulate a failure scenario. The rest of the topology greys out; you see only the affected slice + real recovery steps.</div>
+      <div id="bcp-buttons"></div>
+      <button class="btn btn-ghost btn-block" id="bcp-besu-btn" style="margin-top: 6px;">
+        🛡 BCP for shared Besu (base chain)
       </button>
     </div>
 
@@ -1287,17 +1566,59 @@
         <div class="card"><h4>Tenants</h4><p class="desc">Independent projects — each gets its own Paladin nodes, its own privacy groups, its own governance.</p></div>
         <div class="card"><h4>Interoperability</h4><p class="desc">Atomic bundling on the base chain lets separate privacy groups transact together without leaking state.</p></div>
       </div>
+      <h3>Storage engines (real, verified from upstream)</h3>
+      <table>
+        <thead><tr><th>Component</th><th>Storage</th><th>Default format</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="strong">Besu</td>
+            <td>RocksDB (embedded key-value)</td>
+            <td>Bonsai (recent default) or Forest (legacy)</td>
+            <td>Besu CLI: <code>--data-storage-format</code></td>
+          </tr>
+          <tr>
+            <td class="strong">Paladin</td>
+            <td>PostgreSQL (production) or SQLite (dev)</td>
+            <td>PostgreSQL — one per Paladin node, StatefulSet + PVC</td>
+            <td>Paladin: <code>config/pkg/pldconf/db.go</code> — <code>DBConfig{Postgres, SQLite}</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="quiet" style="margin-top: 6px;">Toggle "Storage engines" in the sidebar to see these labelled on every node in the topology.</p>
+
+      <h3>Running on Kubernetes (GKE / EKS / AKS / self-hosted)</h3>
+      <div class="card-grid">
+        <div class="card">
+          <h4>Paladin operator</h4>
+          <p class="desc">Official operator (<code>operator/</code> in the Paladin repo) installs CRDs and manages Paladin + Besu StatefulSets. Works on any conformant Kubernetes cluster.</p>
+        </div>
+        <div class="card">
+          <h4>GKE-specific notes</h4>
+          <p class="desc">Use Regional StatefulSets for HA across zones. PD-SSD for the Postgres PVCs (state I/O dominates). Cloud Load Balancer for the Paladin RPC endpoint. Workload Identity for signing-key access if using Cloud KMS as the HSM backend.</p>
+        </div>
+        <div class="card">
+          <h4>HA minimum per project</h4>
+          <p class="desc">3 Paladin nodes, spread across ≥2 failure domains via pod anti-affinity. Same for the Besu validator fleet. This is what the BCP scenarios in this demo model.</p>
+        </div>
+        <div class="card">
+          <h4>cert-manager for mTLS</h4>
+          <p class="desc">Paladin nodes talk peer-to-peer over gRPC with mutual TLS. cert-manager (Jetstack) issues + rotates the certs automatically. Included in the operator's Helm dependencies.</p>
+        </div>
+      </div>
+
       <h3>Terminology</h3>
       <table>
         <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
         <tbody>
-          <tr><td class="strong">Besu</td><td>The base EVM chain. Public-within-the-network, opaque commitments only.</td></tr>
-          <tr><td class="strong">Paladin</td><td>Privacy layer on top of Besu. Runs private EVMs (Pente), tokens (Noto, Zeto).</td></tr>
+          <tr><td class="strong">Besu</td><td>The base EVM chain. Public-within-the-network, opaque commitments only. Stores chain data in RocksDB.</td></tr>
+          <tr><td class="strong">Paladin</td><td>Privacy layer on top of Besu. Runs private EVMs (Pente), tokens (Noto, Zeto). Stores private state in PostgreSQL.</td></tr>
           <tr><td class="strong">Privacy group</td><td>An agreement between a set of Paladin nodes to share confidential state. Members can span multiple projects.</td></tr>
           <tr><td class="strong">Ephemeral EVM</td><td>A fresh in-memory Besu EVM spun up per private transaction, then discarded.</td></tr>
           <tr><td class="strong">Endorsement</td><td>Signed confirmation from member nodes that a private transaction is valid.</td></tr>
           <tr><td class="strong">UTXO commitment</td><td>Opaque hash that hits the base chain as proof of a private state transition.</td></tr>
           <tr><td class="strong">3f+1</td><td>The BFT consensus sizing rule. With f failures tolerated, you need 3f+1 validators.</td></tr>
+          <tr><td class="strong">BCP / DR</td><td>Business continuity / disaster recovery. Same concept — planning for what happens when something breaks. See the BCP buttons in the sidebar.</td></tr>
+          <tr><td class="strong">Compensating transaction</td><td>Application-layer "undo" pattern. Blockchain is append-only, so you write forward with a corrective tx (governance-approved) instead of rewinding history.</td></tr>
         </tbody>
       </table>
     </div>
@@ -1325,13 +1646,31 @@
   </div>
 </div>
 
+<!-- ====================== BCP MODAL ====================== -->
+<div class="modal-backdrop" id="bcp-modal">
+  <div class="modal bcp-modal">
+    <div class="bcp-header">
+      <div class="title">
+        <span class="shield">🛡</span>
+        <span>Business Continuity · <span id="bcp-scope-name">—</span></span>
+        <span class="scope-pill" id="bcp-scope-pill">PROJECT</span>
+      </div>
+      <button class="modal-close" id="bcp-modal-close">×</button>
+    </div>
+    <div class="bcp-body">
+      <div class="bcp-scenarios" id="bcp-scenarios"></div>
+      <div class="bcp-detail" id="bcp-detail"></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast-container" id="toasts"></div>
 
 <script>
 /* =============================================================================
    State
    ============================================================================= */
-const LS_KEY = 'sharedchain-demo-v4';
+const LS_KEY = 'sharedchain-demo-v5';
 const PROJECT_COLORS = ['#4d7cfe', '#7c5cff', '#00d4a7', '#ffb545', '#ff5c7a', '#5cb8ff', '#ff8a5c', '#c05cff'];
 const RPC_REGIONS = ['prod', 'core', 'edge', 'main', 'live', 'primary', 'us1', 'eu1', 'ap1'];
 
@@ -1362,6 +1701,15 @@ const DEFAULT_STATE = () => ({
   useCases: {},
   decideAnswers: {},
   view: { zoom: 1, panX: 0, panY: 0 },
+  // Which layers/annotations are visible in the topology
+  display: {
+    showDatabases: false,       // Postgres / RocksDB badges on nodes
+    showProtocolLabels: true,   // JSON-RPC / QBFT / member pills on connections
+    showRpc: true,              // Paladin → Besu RPC curves
+    showP2p: true,              // Besu chain rails between validators
+    showPgLinks: true,          // Privacy-group card → member Paladin lines
+  },
+  bcp: null, // when open: { scope: 'project'|'besu', projectId?, scenarioId, step }
 });
 
 function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){} }
@@ -1372,6 +1720,10 @@ function load() {
     if (!state.selection) state.selection = { kind: null };
     if (!state.privacyGroups) state.privacyGroups = [];
     if (!state.view) state.view = { zoom: 1, panX: 0, panY: 0 };
+    if (!state.display) state.display = {
+      showDatabases: false, showProtocolLabels: true, showRpc: true, showP2p: true, showPgLinks: true,
+    };
+    if (state.bcp === undefined) state.bcp = null;
     // Migration: lift old projects[].privacyGroups
     state.projects.forEach(p => {
       if (p.privacyGroups) {
@@ -1702,63 +2054,66 @@ function renderNetwork() {
     `);
   });
 
-  // Draw Paladin -> Besu connection lines (curves only).
-  paladinNodes.forEach(pn => {
-    const yTarget = LAYER.besu.yTop + 20;
-    parts.push(`
-      <path d="M${pn.x},${pn.y + 14} C${pn.x},${(pn.y + yTarget) / 2 + 20} ${pn.x},${(pn.y + yTarget) / 2 - 20} ${pn.x},${yTarget}"
-            fill="none" stroke="${pn.color}" stroke-opacity="0.28" stroke-width="1.2"/>
-    `);
-  });
-
-  // One "JSON-RPC" label per project, placed in the clear gap between the
-  // Paladin layer's box and the Besu layer. Avoids overlapping with any node.
-  projectBoxes.forEach(pb => {
-    const labelY = LAYER.paladin.yBottom + 30;
-    parts.push(`
-      <g transform="translate(${pb.cx} ${labelY})" pointer-events="none">
-        <rect x="-32" y="-8" width="64" height="16" rx="8" fill="#131a2b" stroke="${pb.project.color}" stroke-opacity="0.55" stroke-width="0.9"/>
-        <text x="0" y="4" font-size="9" text-anchor="middle" fill="${pb.project.color}" opacity="0.95" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">JSON-RPC</text>
-      </g>
-    `);
-  });
-
-  // Draw PG cards -> member nodes lines, labelled "member" so the
-  // relationship (semantic, not wire) is self-evident.
-  pgCards.forEach(card => {
-    const g = card.group;
-    const membersToLabel = g.members.length;
-    g.members.forEach((mem, mi) => {
-      const p = findProject(mem.projectId);
-      if (!p) return;
-      const pn = paladinNodes.find(x => x.projectId === mem.projectId && x.idx === mem.nodeIndex);
-      if (!pn) return;
-      const isCross = isCrossProjectGroup(g);
-      const color = isCross ? '#00d4a7' : '#a48bff';
-      const startX = card.cx;
-      const startY = card.y + card.h;
-      const endX = pn.x;
-      const endY = pn.y - 14;
-      const midY = (startY + endY) / 2;
-      // Curve
+  // Draw Paladin -> Besu connection lines (curves only) — respects showRpc toggle.
+  if (state.display.showRpc) {
+    paladinNodes.forEach(pn => {
+      const yTarget = LAYER.besu.yTop + 20;
       parts.push(`
-        <path d="M${startX},${startY} C${startX},${midY} ${endX},${midY} ${endX},${endY}"
-              fill="none" stroke="${color}" stroke-opacity="0.5" stroke-width="1.3"/>
+        <path d="M${pn.x},${pn.y + 14} C${pn.x},${(pn.y + yTarget) / 2 + 20} ${pn.x},${(pn.y + yTarget) / 2 - 20} ${pn.x},${yTarget}"
+              fill="none" stroke="${pn.color}" stroke-opacity="0.28" stroke-width="1.2"/>
       `);
-      // Protocol/relationship label — position along the curve, staggered so
-      // multiple sibling lines don't stack labels on top of each other.
-      const labelT = 0.35 + (mi / Math.max(1, membersToLabel - 1)) * 0.3; // 0.35..0.65
-      // Approximate a cubic bezier midpoint by linear interp of the two control-hull endpoints.
-      const bx = startX + (endX - startX) * labelT;
-      const by = startY + (endY - startY) * labelT - 8; // lift slightly above the line
+    });
+  }
+
+  // One "JSON-RPC" pill per project — respects showProtocolLabels + showRpc.
+  if (state.display.showRpc && state.display.showProtocolLabels) {
+    projectBoxes.forEach(pb => {
+      const labelY = LAYER.paladin.yBottom + 30;
       parts.push(`
-        <g transform="translate(${bx} ${by})" pointer-events="none">
-          <rect x="-24" y="-7" width="48" height="14" rx="7" fill="#131a2b" stroke="${color}" stroke-opacity="0.55" stroke-width="0.8"/>
-          <text x="0" y="3" font-size="8.5" text-anchor="middle" fill="${color}" opacity="0.95" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">member</text>
+        <g transform="translate(${pb.cx} ${labelY})" pointer-events="none">
+          <rect x="-32" y="-8" width="64" height="16" rx="8" fill="#131a2b" stroke="${pb.project.color}" stroke-opacity="0.55" stroke-width="0.9"/>
+          <text x="0" y="4" font-size="9" text-anchor="middle" fill="${pb.project.color}" opacity="0.95" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">JSON-RPC</text>
         </g>
       `);
     });
-  });
+  }
+
+  // Draw PG cards -> member nodes lines, labelled "member". Respects
+  // showPgLinks (the curves) and showProtocolLabels (the pill labels).
+  if (state.display.showPgLinks) {
+    pgCards.forEach(card => {
+      const g = card.group;
+      const membersToLabel = g.members.length;
+      g.members.forEach((mem, mi) => {
+        const p = findProject(mem.projectId);
+        if (!p) return;
+        const pn = paladinNodes.find(x => x.projectId === mem.projectId && x.idx === mem.nodeIndex);
+        if (!pn) return;
+        const isCross = isCrossProjectGroup(g);
+        const color = isCross ? '#00d4a7' : '#a48bff';
+        const startX = card.cx;
+        const startY = card.y + card.h;
+        const endX = pn.x;
+        const endY = pn.y - 14;
+        const midY = (startY + endY) / 2;
+        parts.push(`
+          <path d="M${startX},${startY} C${startX},${midY} ${endX},${midY} ${endX},${endY}"
+                fill="none" stroke="${color}" stroke-opacity="0.5" stroke-width="1.3"/>
+        `);
+        if (state.display.showProtocolLabels) {
+          const labelT = 0.35 + (mi / Math.max(1, membersToLabel - 1)) * 0.3;
+          const bx = startX + (endX - startX) * labelT;
+          const by = startY + (endY - startY) * labelT - 8;
+          parts.push(`
+            <g transform="translate(${bx} ${by})" pointer-events="none">
+              <rect x="-24" y="-7" width="48" height="14" rx="7" fill="#131a2b" stroke="${color}" stroke-opacity="0.55" stroke-width="0.8"/>
+              <text x="0" y="3" font-size="8.5" text-anchor="middle" fill="${color}" opacity="0.95" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">member</text>
+            </g>
+          `);
+        }
+      });
+    });
+  }
 
   // Now draw PG cards on top
   pgCards.forEach(card => {
@@ -1833,7 +2188,8 @@ function renderNetwork() {
   });
 
   // Draw Paladin nodes. Clean disc, label with text-outline for legibility on
-  // any background colour, identity-count badge top-right.
+  // any background colour, identity-count badge top-right, optional Postgres
+  // DB badge below (when showDatabases toggle is on).
   paladinNodes.forEach(pn => {
     const p = findProject(pn.projectId);
     const idCount = getIdentities(p, pn.idx).length;
@@ -1851,36 +2207,51 @@ function renderNetwork() {
           <circle cx="${pn.x + 14}" cy="${pn.y - 12}" r="8" fill="#0a0e1a" stroke="${pn.color}" stroke-width="1.5"/>
           <text x="${pn.x + 14}" y="${pn.y - 9}" fill="${pn.color}" font-size="9" font-weight="700" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif">${idCount}</text>
         ` : ''}
-        <title>${fullName} · ${idCount} identit${idCount === 1 ? 'y' : 'ies'}</title>
+        ${state.display.showDatabases ? `
+          <g transform="translate(${pn.x} ${pn.y + 28})" pointer-events="none">
+            <rect x="-26" y="-8" width="52" height="16" rx="3" fill="#0d1e35" stroke="#336791" stroke-width="1"/>
+            <circle cx="-18" cy="0" r="4" fill="#336791"/>
+            <text x="-13" y="3" font-size="8.5" fill="#7ab3d9" font-family="ui-monospace, monospace" font-weight="700">Postgres</text>
+          </g>
+        ` : ''}
+        <title>${fullName} · ${idCount} identit${idCount === 1 ? 'y' : 'ies'}${state.display.showDatabases ? ' · state stored in PostgreSQL' : ''}</title>
       </g>
     `);
   });
 
-  // Draw the Besu chain FIRST: connecting rails + block indicators + protocol
-  // label between adjacent validators.
-  for (let i = 0; i < besuNodes.length - 1; i++) {
-    const a = besuNodes[i], b = besuNodes[i + 1];
-    const midX = (a.x + b.x) / 2;
-    const midY = (a.y + b.y) / 2;
-    parts.push(`
-      <line x1="${a.x + 20}" y1="${a.y}" x2="${b.x - 20}" y2="${b.y}"
-            stroke="#ffb545" stroke-width="1.3" stroke-opacity="0.4"/>
-      <line x1="${a.x + 20}" y1="${a.y - 3}" x2="${b.x - 20}" y2="${b.y - 3}"
-            stroke="#ffb545" stroke-width="0.6" stroke-opacity="0.2"/>
-      <line x1="${a.x + 20}" y1="${a.y + 3}" x2="${b.x - 20}" y2="${b.y + 3}"
-            stroke="#ffb545" stroke-width="0.6" stroke-opacity="0.2"/>
-      <g transform="translate(${midX} ${midY}) rotate(45)">
-        <rect x="-5" y="-5" width="10" height="10" rx="1.5"
-              fill="#1a1408" stroke="#ffb545" stroke-width="1.2" stroke-opacity="0.65"/>
-      </g>
-      <g transform="translate(${midX} ${midY - 22})" pointer-events="none">
-        <rect x="-34" y="-8" width="68" height="16" rx="8" fill="#131a2b" stroke="#ffb545" stroke-opacity="0.55" stroke-width="0.9"/>
-        <text x="0" y="4" font-size="9" text-anchor="middle" fill="#ffb545" opacity="0.95" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">QBFT · P2P</text>
-      </g>
-    `);
+  // Draw the Besu chain: connecting rails + block indicators + protocol
+  // label between adjacent validators. Respects showP2p (rails+blocks) and
+  // showProtocolLabels (QBFT pill) toggles.
+  if (state.display.showP2p) {
+    for (let i = 0; i < besuNodes.length - 1; i++) {
+      const a = besuNodes[i], b = besuNodes[i + 1];
+      const midX = (a.x + b.x) / 2;
+      const midY = (a.y + b.y) / 2;
+      parts.push(`
+        <line x1="${a.x + 20}" y1="${a.y}" x2="${b.x - 20}" y2="${b.y}"
+              stroke="#ffb545" stroke-width="1.3" stroke-opacity="0.4"/>
+        <line x1="${a.x + 20}" y1="${a.y - 3}" x2="${b.x - 20}" y2="${b.y - 3}"
+              stroke="#ffb545" stroke-width="0.6" stroke-opacity="0.2"/>
+        <line x1="${a.x + 20}" y1="${a.y + 3}" x2="${b.x - 20}" y2="${b.y + 3}"
+              stroke="#ffb545" stroke-width="0.6" stroke-opacity="0.2"/>
+        <g transform="translate(${midX} ${midY}) rotate(45)">
+          <rect x="-5" y="-5" width="10" height="10" rx="1.5"
+                fill="#1a1408" stroke="#ffb545" stroke-width="1.2" stroke-opacity="0.65"/>
+        </g>
+      `);
+      if (state.display.showProtocolLabels) {
+        parts.push(`
+          <g transform="translate(${midX} ${midY - 22})" pointer-events="none">
+            <rect x="-34" y="-8" width="68" height="16" rx="8" fill="#131a2b" stroke="#ffb545" stroke-opacity="0.55" stroke-width="0.9"/>
+            <text x="0" y="4" font-size="9" text-anchor="middle" fill="#ffb545" opacity="0.95" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.3">QBFT · P2P</text>
+          </g>
+        `);
+      }
+    }
   }
 
-  // Draw Besu validators. Clean disc, text with outline. No dark inner blob.
+  // Draw Besu validators. Clean disc, text with outline. Optional RocksDB
+  // badge below (when showDatabases toggle is on).
   besuNodes.forEach((b, i) => {
     parts.push(`
       <g class="svg-besu-node" data-besu-id="${b.id}">
@@ -1891,7 +2262,14 @@ function renderNetwork() {
               font-family="-apple-system, BlinkMacSystemFont, sans-serif"
               paint-order="stroke fill" stroke="rgba(26,20,8,0.85)" stroke-width="2.5" stroke-linejoin="round"
               fill="white">v${i + 1}</text>
-        <title>Besu validator · ${b.name}</title>
+        ${state.display.showDatabases ? `
+          <g transform="translate(${b.x} ${b.y + 28})" pointer-events="none">
+            <rect x="-28" y="-8" width="56" height="16" rx="3" fill="#2a1f0a" stroke="#a04010" stroke-width="1"/>
+            <rect x="-22" y="-4" width="8" height="8" fill="#e04010"/>
+            <text x="-10" y="3" font-size="8.5" fill="#ffb090" font-family="ui-monospace, monospace" font-weight="700">RocksDB</text>
+          </g>
+        ` : ''}
+        <title>Besu validator · ${b.name}${state.display.showDatabases ? ' · chain data in RocksDB (Bonsai)' : ''}</title>
       </g>
     `);
   });
@@ -2364,7 +2742,7 @@ function addProject() {
   state.selectedProjectId = p.id;
   state.selection = { kind: null };
   save(); renderAll();
-  toast(`Added ${p.name} with 3 Paladin nodes`);
+  toast(`Added ${p.name}: 3 Paladin nodes + 3 Postgres DBs provisioned. Zero impact on existing tenants — new isolated fleet on the same shared Besu.`, 'success');
 }
 
 /* Identity accessors */
@@ -2410,32 +2788,47 @@ function memberShortLabel(m) {
 }
 function removeProject(pid) {
   if (state.projects.length <= 1) return;
-  // Remove groups whose only members were in this project
+  const p = findProject(pid);
+  const pname = p ? p.name : 'project';
+  // Groups whose members were only in this project will lose all members
+  let groupsAffected = 0, groupsDroppedFully = 0;
   state.privacyGroups.forEach(g => {
+    const before = g.members.length;
     g.members = g.members.filter(m => m.projectId !== pid);
+    if (g.members.length < before) groupsAffected += 1;
+    if (g.members.length === 0) groupsDroppedFully += 1;
   });
   state.privacyGroups = state.privacyGroups.filter(g => g.members.length > 0);
   state.projects = state.projects.filter(p => p.id !== pid);
   if (state.selectedProjectId === pid) state.selectedProjectId = state.projects[0].id;
   state.selection = { kind: null };
   save(); renderAll();
+  toast(`Removed ${pname}: ${groupsDroppedFully} privacy group(s) had no members left and were dropped. ${groupsAffected - groupsDroppedFully} cross-project group(s) survived with reduced membership. Base Besu unaffected — other tenants keep operating.`, 'warning');
 }
 function changeProjectNodes(pid, delta) {
   const p = state.projects.find(x => x.id === pid);
   if (!p) return;
   const newN = Math.max(1, Math.min(9, p.paladinNodes + delta));
   if (newN === p.paladinNodes) return;
+  const oldN = p.paladinNodes;
   p.paladinNodes = newN;
-  // Keep identities in sync
   if (!Array.isArray(p.identities)) p.identities = [];
   while (p.identities.length < newN) p.identities.push(['user']);
   p.identities = p.identities.slice(0, newN);
-  // Prune out-of-range members
+  let membersPruned = 0;
   state.privacyGroups.forEach(g => {
+    const before = g.members.length;
     g.members = g.members.filter(m => !(m.projectId === pid && m.nodeIndex >= newN));
+    membersPruned += (before - g.members.length);
   });
   state.privacyGroups = state.privacyGroups.filter(g => g.members.length > 0);
   save(); renderAll();
+  if (delta > 0) {
+    toast(`${p.name}: added Paladin node p${newN}. New Postgres PVC provisioned. Zero downtime — new node joins the pool and existing groups keep serving. HA improves.`, 'success');
+  } else {
+    const hint = newN < 3 ? ' Warning: below the 3-node HA minimum — one failure now takes the project offline.' : '';
+    toast(`${p.name}: removed p${oldN}. ${membersPruned} group membership(s) pruned.${hint}`, newN < 3 ? 'warning' : 'success');
+  }
 }
 function renameProject(pid, name) {
   const p = state.projects.find(x => x.id === pid);
@@ -2893,6 +3286,486 @@ async function copyDiagramAsPNG() {
 }
 
 /* =============================================================================
+   BCP (Business Continuity / Disaster Recovery) — scenarios + modal
+   =============================================================================
+   Every scenario below reflects real Paladin / Besu behaviour. Sources:
+   - config/pkg/pldconf/db.go (upstream Paladin): DBConfig supports Postgres + SQLite
+   - Paladin operator: StatefulSet + PVC + reliable messaging peer resync
+   - Besu docs: RocksDB storage engine, Bonsai storage format, QBFT/IBFT consensus
+     needs 3f+1 validators to tolerate f simultaneous failures
+   - Paladin design intent: append-only ledger, no rollback; recovery is
+     application-owned via compensating transactions (per maintainer commentary
+     on PR #872 / #912, quoted in docs/02-privacy-model-history.md)
+   ============================================================================= */
+
+const BCP_SCENARIOS = [
+  {
+    id: 'node-crash',
+    scope: 'project',
+    severity: 'low',
+    category: 'Infrastructure',
+    tag: 'must',
+    title: 'Single Paladin node crashes',
+    summary: 'One member Paladin pod restarts unexpectedly (OOM, node reboot, network blip).',
+    impact: 'This project only. Other tenants unaffected. Privacy groups with ≥2 remaining member nodes keep serving reads. Writes needing endorsement from the crashed node stall until it returns.',
+    owner: ['infra'],
+    timeline: [
+      { t: '0s', a: 'Node process crashes. Kubernetes readiness probe fails.' },
+      { t: '5–30s', a: '<b>K8s StatefulSet</b> detects the failure and restarts the pod.' },
+      { t: '10–20s', a: 'Paladin process starts, reconnects to its <b>PostgreSQL PVC</b> (state intact).' },
+      { t: '5–15s', a: 'Reliable-messaging peer resync catches up any state missed while down.' },
+      { t: '≈1 min total', a: 'Node back in endorsement rotation. Zero data loss.' },
+    ],
+    truth: 'Paladin state is persisted to Postgres on a Kubernetes PVC. As long as the PVC survives the crash, restart is transparent. This is the common case and needs no application-layer action.',
+    diagram: 'crash',
+  },
+  {
+    id: 'db-corruption',
+    scope: 'project',
+    severity: 'med',
+    category: 'Infrastructure',
+    tag: 'must',
+    title: 'One node\'s Postgres DB corrupts / lost',
+    summary: 'Disk fails or DB file becomes unreadable on a single member node.',
+    impact: 'This project only. The affected node cannot serve reads/writes. Other member nodes still hold the state, so the privacy group keeps operating.',
+    owner: ['infra'],
+    timeline: [
+      { t: '0s', a: 'Postgres reports IO error or refuses to start.' },
+      { t: '1–5 min', a: 'Ops action: attach a fresh empty PVC to the same StatefulSet slot.' },
+      { t: '5–30 min', a: 'Paladin\'s <b>reliable-messaging transport</b> replays missed state distributions from peer member nodes.' },
+      { t: '30 min – few hrs', a: 'Historic state re-materialises from peers (depends on group activity + tx count).' },
+      { t: 'complete', a: 'Node fully synced. No plaintext loss because ≥1 other member still had it.' },
+    ],
+    truth: 'Because privacy-group state is replicated to every member node, losing ONE node\'s copy is not a data-loss event — it\'s a recovery event. This is why HA per project = at least 3 member nodes.',
+    diagram: 'resync',
+  },
+  {
+    id: 'region-outage',
+    scope: 'project',
+    severity: 'med',
+    category: 'Infrastructure',
+    tag: 'should',
+    title: 'Regional / AZ outage',
+    summary: 'One cloud region or availability zone becomes unavailable.',
+    impact: 'This project keeps serving from members in other regions IF you deployed across ≥2 failure domains. If the project runs in a single region, it goes fully offline until the region returns.',
+    owner: ['infra', 'ops'],
+    timeline: [
+      { t: '0s', a: 'Region A goes dark. Its Paladin members become unreachable.' },
+      { t: 'immediate', a: 'App traffic fails over to Region B member(s) via load balancer / DNS.' },
+      { t: '<1 min', a: 'Reads served from Region B. Writes require endorsement quorum — if remaining nodes ≥ threshold, they proceed.' },
+      { t: 'region returns', a: 'Region A members auto-resync missed state via peer messaging (same path as scenario 2).' },
+      { t: 'complete', a: 'Full topology restored, no data loss.' },
+    ],
+    truth: 'HA topology minimum: 3 member Paladin nodes across ≥2 failure domains (primary AZ + secondary AZ + DR region). Anti-affinity in the StatefulSet manifest is what enforces this at deploy time.',
+    diagram: 'region',
+  },
+  {
+    id: 'all-lost',
+    scope: 'project',
+    severity: 'high',
+    category: 'Infrastructure (catastrophic)',
+    tag: 'must',
+    title: 'ALL member nodes lose their DB simultaneously',
+    summary: 'The nightmare: every member node\'s Postgres is unrecoverable at the same time (bad DR restore across fleet, correlated storage failure, ransomware).',
+    impact: 'Private plaintext is <b>gone</b>. Base chain has only opaque UTXO commitments — those cannot be reversed to plaintext without the pre-image, which was in the databases you just lost.',
+    owner: ['app', 'ops'],
+    timeline: [
+      { t: '0s', a: 'All Paladin members offline, DBs unrecoverable.' },
+      { t: 'immediate', a: 'Base-chain UTXO commitments still visible on Besu — but they\'re just hashes. No help.' },
+      { t: 'recovery path', a: 'Restore from <b>application-managed off-Paladin encrypted backup</b> if the project maintained one.' },
+      { t: 'if no backup', a: 'Plaintext cannot be reconstructed. Only remaining option: business-level re-derivation from external systems (source-of-truth databases, counter-party records).' },
+    ],
+    truth: 'This is why projects handling material data MUST take periodic off-Paladin backups of critical private state — encrypted with keys the project controls. The base chain does NOT save you here. This is unique to privacy-preserving ledgers: fewer plaintext copies = higher single-point-of-loss risk.',
+    diagram: 'catastrophic',
+  },
+  {
+    id: 'bad-data',
+    scope: 'project',
+    severity: 'med',
+    category: 'Application',
+    tag: 'must',
+    title: 'Wrong data written on-chain (bad tx)',
+    summary: 'A user or bug writes an incorrect value to a private contract.',
+    impact: 'Blockchain is append-only. You cannot delete or edit the bad tx. The only fix is to write a compensating tx that corrects the business effect.',
+    owner: ['app', 'gov'],
+    timeline: [
+      { t: '0s', a: 'Bad tx committed to the privacy group + base chain.' },
+      { t: 'detect', a: 'Off-chain reconciliation or user report flags the bad state.' },
+      { t: 'governance', a: 'Multi-sig / DAO / governance contract approves a compensating action.' },
+      { t: 'compensate', a: 'A NEW tx runs the contract\'s <code>reverseX(originalTxId, reason)</code> function and emits <code>Compensated(originalTxId, reason)</code>.' },
+      { t: 'complete', a: 'State is now correct (write-forward). Both the original AND the correction are visible in history — auditable.' },
+    ],
+    truth: 'This is why every state-changing function should have a governance-guarded reversal counterpart. The pattern: <code>function transfer(...) external { ... }</code> paired with <code>function reverseTransfer(bytes32 origTxId, string reason) external onlyGovernance { ... }</code>. Recovery is application-layer, not infra.',
+    diagram: 'compensate',
+  },
+  {
+    id: 'contract-bug',
+    scope: 'project',
+    severity: 'high',
+    category: 'Application',
+    tag: 'should',
+    title: 'Smart contract bug producing wrong state',
+    summary: 'A bug in the deployed contract is producing incorrect state for many transactions.',
+    impact: 'This project only. Blast radius depends on the bug — could affect one contract or every contract sharing the buggy code.',
+    owner: ['app', 'gov'],
+    timeline: [
+      { t: '0s', a: 'Bug detected via monitoring, user report, or reconciliation drift.' },
+      { t: 'pause', a: 'Governance-guarded <code>pause()</code> on the buggy contract halts further writes.' },
+      { t: 'deploy fix', a: 'Deploy corrected contract into a NEW privacy group (blue/green pattern) or as a proxy upgrade.' },
+      { t: 'migrate state', a: 'Governance-approved migration function reads the buggy state, applies the correct transform, writes to the new contract.' },
+      { t: 'cutover', a: 'Application config points at the new contract address. Old contract deprecated (not deleted — history preserved).' },
+    ],
+    truth: 'Rollback for smart contracts is never a state rewind. It is a governance action that deploys the previous (or corrected) version and migrates forward. The old on-chain data is preserved for audit.',
+    diagram: 'contract-upgrade',
+  },
+  {
+    id: 'malicious-identity',
+    scope: 'project',
+    severity: 'high',
+    category: 'Application + Governance',
+    tag: 'must',
+    title: 'Compromised or malicious identity',
+    summary: 'A member identity (e.g. <code>alice@node1</code>) is compromised and used to write unauthorised transactions.',
+    impact: 'This project only. All writes signed by the compromised key are on-chain and endorsed — technically valid, but not authorised business-wise.',
+    owner: ['app', 'gov', 'ops'],
+    timeline: [
+      { t: '0s', a: 'Compromise detected (audit log anomaly, external report, HSM alert).' },
+      { t: 'revoke', a: 'Rotate the identity\'s signing key in Paladin\'s key manager. Old key can no longer sign new endorsements.' },
+      { t: 'group re-membership', a: 'If the identity itself is untrusted, re-create the privacy group with new membership list (Paladin group membership is set at genesis, so this is a new group + state migration).' },
+      { t: 'compensate', a: 'Issue governance-guarded compensating txs to reverse the unauthorised writes\' business effect.' },
+      { t: 'post-mortem', a: 'Audit the full identity/key management chain to identify root cause.' },
+    ],
+    truth: 'Paladin identities resolve to signing keys held by the key manager (HSM or file). Compromise = key exfiltration. Recovery is a combination of infra (rotate keys), governance (approve compensations), and app (re-issue affected transactions).',
+    diagram: 'revoke',
+  },
+  {
+    id: 'besu-consensus-loss',
+    scope: 'besu',
+    severity: 'high',
+    category: 'Infrastructure — SHARED IMPACT',
+    tag: 'must',
+    title: 'Base Besu loses consensus quorum',
+    summary: 'Too many Besu validators are simultaneously offline (f+1 or more, breaking BFT). Base chain stops producing blocks. Affects EVERY project.',
+    impact: '<b>Every tenant on the shared chain is affected.</b> All private-tx commits stall — Paladin can prepare and endorse locally but cannot commit UTXO transitions until Besu recovers.',
+    owner: ['infra', 'ops'],
+    timeline: [
+      { t: '0s', a: 'Validator count drops below <code>2f+1</code> quorum. Block production stops.' },
+      { t: 'immediate', a: 'All Paladin projects: pending private-tx submissions queue up. Reads still work (local state).' },
+      { t: '5–30 min', a: 'Ops action: restart / restore failed validators OR bring up replacements from validator-key backups.' },
+      { t: 'quorum restored', a: 'Besu resumes block production. Queued Paladin commits drain in FIFO order.' },
+      { t: 'post-recovery', a: 'No data loss (state was preserved on RocksDB PVCs of surviving validators). But possibly minutes to hours of write latency for every tenant.' },
+    ],
+    truth: 'This is why the fault-tolerance slider matters. With f=2 (7 validators total), you can lose 2 validators simultaneously and still produce blocks. Lose 3 → block production halts until at least one comes back. The 3f+1 sizing determines your write availability under correlated failure.',
+    diagram: 'besu-quorum',
+  },
+  {
+    id: 'besu-fork',
+    scope: 'besu',
+    severity: 'high',
+    category: 'Infrastructure — SHARED IMPACT',
+    tag: 'could',
+    title: 'Rollback / forking the base chain',
+    summary: 'Can we "roll back the blockchain" to an earlier block?',
+    impact: 'Technically possible in a permissioned Besu chain but requires ALL validators to coordinate a manual fork. Extremely disruptive: every Paladin project\'s UTXO commitments after the fork point are invalidated. Not a normal recovery mechanism.',
+    owner: ['infra', 'gov'],
+    timeline: [
+      { t: 'never (recommended)', a: 'Rollback is a nuclear option. Prefer application-layer compensation (scenario 5) 99% of the time.' },
+      { t: 'if truly needed', a: 'All validator operators coordinate: stop nodes, restore RocksDB to a snapshot from the fork point, restart, refuse blocks beyond fork point.' },
+      { t: 'consequence', a: 'Every Paladin private tx committed after the fork point loses its base-chain anchor. Application state on member nodes must be manually reconciled.' },
+      { t: 'alternative', a: 'Application-level compensating transactions (write-forward, no rewind) — always preferred for real incidents.' },
+    ],
+    truth: 'Public blockchains cannot fork like this. Permissioned Besu technically can (all validators agree) but the price is invalidating every downstream commitment. In practice: never do this in production. Design applications so that compensation is always cheaper than fork.',
+    diagram: 'fork',
+  },
+];
+
+let activeBcpScenarioId = null;
+
+function openBcp(scope, projectId) {
+  const first = BCP_SCENARIOS.filter(s => s.scope === scope)[0];
+  state.bcp = {
+    scope,
+    projectId: projectId || null,
+    scenarioId: first ? first.id : null,
+  };
+  activeBcpScenarioId = state.bcp.scenarioId;
+  save();
+  renderBcpModal();
+  document.getElementById('bcp-modal').classList.add('open');
+  document.querySelector('.canvas').classList.add('bcp-focused');
+}
+
+function closeBcp() {
+  state.bcp = null;
+  save();
+  document.getElementById('bcp-modal').classList.remove('open');
+  document.querySelector('.canvas').classList.remove('bcp-focused');
+}
+
+function selectBcpScenario(sid) {
+  if (!state.bcp) return;
+  state.bcp.scenarioId = sid;
+  activeBcpScenarioId = sid;
+  save();
+  renderBcpModal();
+}
+
+function renderBcpModal() {
+  if (!state.bcp) return;
+  const { scope, projectId, scenarioId } = state.bcp;
+  const project = projectId ? findProject(projectId) : null;
+
+  document.getElementById('bcp-scope-name').textContent =
+    scope === 'besu' ? 'Shared Besu (base chain)' : (project ? project.name : '—');
+  document.getElementById('bcp-scope-pill').textContent =
+    scope === 'besu' ? 'SHARED · ALL TENANTS' : 'PROJECT (isolated blast radius)';
+
+  const scenarios = BCP_SCENARIOS.filter(s => s.scope === scope);
+  const scList = document.getElementById('bcp-scenarios');
+  scList.innerHTML = scenarios.map(s => `
+    <div class="bcp-scenario ${s.id === scenarioId ? 'active' : ''}" data-sid="${s.id}">
+      <span class="sev-dot ${s.severity}"></span>
+      <div style="flex:1; min-width:0;">
+        <div class="s-title">
+          ${escapeHtml(s.title)}
+          <span class="s-tag ${s.tag}">${s.tag}</span>
+        </div>
+        <div class="s-meta">${escapeHtml(s.category)}</div>
+      </div>
+    </div>
+  `).join('');
+  scList.querySelectorAll('.bcp-scenario').forEach(el => {
+    el.addEventListener('click', () => selectBcpScenario(el.dataset.sid));
+  });
+
+  const s = scenarios.find(x => x.id === scenarioId) || scenarios[0];
+  if (!s) {
+    document.getElementById('bcp-detail').innerHTML = '<div class="quiet">No scenario selected.</div>';
+    return;
+  }
+  const ownershipLabels = { infra: 'Infrastructure team', app: 'Application team', gov: 'Governance', ops: 'Ops / SRE' };
+  const scopeLabel = scope === 'besu'
+    ? '<b style="color: var(--danger);">Shared impact:</b> affects <b>every</b> project on the platform.'
+    : `<b style="color: var(--success);">Blast radius:</b> ${escapeHtml(project?.name || 'this project')} only. Other tenants unaffected.`;
+
+  document.getElementById('bcp-detail').innerHTML = `
+    <h3 class="bcp-scenario-title">
+      <span class="sev-dot ${s.severity}" style="display:inline-block; margin-right: 8px; vertical-align: middle;"></span>
+      ${escapeHtml(s.title)}
+    </h3>
+    <div class="bcp-summary">${escapeHtml(s.summary)}</div>
+
+    <h4>Who owns recovery</h4>
+    <div class="own-row">
+      ${s.owner.map(o => `<span class="own-chip ${o}">${ownershipLabels[o] || o}</span>`).join('')}
+    </div>
+
+    <h4>Impact</h4>
+    <div style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 4px;">${scopeLabel}</div>
+    <div style="font-size: 12.5px; color: var(--text);">${s.impact}</div>
+
+    <h4>What Paladin actually does</h4>
+    <div class="bcp-diagram">
+      ${renderBcpDiagram(s.diagram, s)}
+    </div>
+
+    <h4>Recovery timeline</h4>
+    <ul class="bcp-timeline">
+      ${s.timeline.map(t => `<li><span class="t">${escapeHtml(t.t)}</span><span class="a">${t.a}</span></li>`).join('')}
+    </ul>
+
+    <div class="bcp-truth">
+      <b>Ground truth:</b> ${s.truth}
+    </div>
+  `;
+}
+
+/* BCP mini-diagrams: small SVGs illustrating each scenario. Each is a
+   simplified schematic — not the full topology — showing exactly what
+   fails and what recovers. */
+function renderBcpDiagram(kind, scenario) {
+  const projectColor = scenario.scope === 'besu' ? '#ffb545' : (findProject(state.bcp?.projectId)?.color || '#4d7cfe');
+  switch (kind) {
+    case 'crash': return `
+      <svg viewBox="0 0 500 180">
+        <defs><filter id="dead"><feColorMatrix values="0.3 0.3 0.3 0 0 0.3 0.3 0.3 0 0 0.3 0.3 0.3 0 0 0 0 0 0.6 0"/></filter></defs>
+        <text x="20" y="20" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">BEFORE</text>
+        <text x="270" y="20" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">DURING CRASH</text>
+        <text x="20" y="115" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">AFTER (auto-recover)</text>
+        <circle cx="60" cy="55" r="14" fill="${projectColor}"/><text x="60" y="59" fill="white" text-anchor="middle" font-size="10" font-weight="700">p1</text>
+        <circle cx="110" cy="55" r="14" fill="${projectColor}"/><text x="110" y="59" fill="white" text-anchor="middle" font-size="10" font-weight="700">p2</text>
+        <circle cx="160" cy="55" r="14" fill="${projectColor}"/><text x="160" y="59" fill="white" text-anchor="middle" font-size="10" font-weight="700">p3</text>
+        <circle cx="310" cy="55" r="14" fill="${projectColor}" filter="url(#dead)"/><text x="310" y="59" fill="#8a94ad" text-anchor="middle" font-size="10" font-weight="700">p1</text>
+        <text x="310" y="82" fill="var(--danger)" text-anchor="middle" font-size="10" font-weight="700">✕ crash</text>
+        <circle cx="360" cy="55" r="14" fill="${projectColor}"/><text x="360" y="59" fill="white" text-anchor="middle" font-size="10" font-weight="700">p2</text>
+        <circle cx="410" cy="55" r="14" fill="${projectColor}"/><text x="410" y="59" fill="white" text-anchor="middle" font-size="10" font-weight="700">p3</text>
+        <text x="310" y="102" fill="#00d4a7" text-anchor="middle" font-size="9">↓ K8s restart</text>
+        <circle cx="60" cy="150" r="14" fill="${projectColor}"/><text x="60" y="154" fill="white" text-anchor="middle" font-size="10" font-weight="700">p1</text>
+        <text x="60" y="177" fill="#00d4a7" text-anchor="middle" font-size="9" font-weight="700">✓ back</text>
+        <circle cx="110" cy="150" r="14" fill="${projectColor}"/><text x="110" y="154" fill="white" text-anchor="middle" font-size="10" font-weight="700">p2</text>
+        <circle cx="160" cy="150" r="14" fill="${projectColor}"/><text x="160" y="154" fill="white" text-anchor="middle" font-size="10" font-weight="700">p3</text>
+        <text x="240" y="155" fill="#8a94ad" font-size="10">← Resync via reliable-messaging peer transport</text>
+      </svg>`;
+    case 'resync': return `
+      <svg viewBox="0 0 500 180">
+        <text x="20" y="20" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">DB LOST ON p1 · OTHER MEMBERS INTACT</text>
+        <circle cx="80" cy="80" r="18" fill="${projectColor}" opacity="0.35"/><text x="80" y="84" fill="white" text-anchor="middle" font-size="11" font-weight="700">p1</text>
+        <text x="80" y="112" fill="var(--danger)" text-anchor="middle" font-size="9" font-weight="700">Postgres ✕</text>
+        <text x="80" y="124" fill="var(--danger)" text-anchor="middle" font-size="8">fresh empty PVC</text>
+        <circle cx="250" cy="80" r="18" fill="${projectColor}"/><text x="250" y="84" fill="white" text-anchor="middle" font-size="11" font-weight="700">p2</text>
+        <text x="250" y="112" fill="#00d4a7" text-anchor="middle" font-size="9" font-weight="700">Postgres ✓</text>
+        <text x="250" y="124" fill="var(--text-muted)" text-anchor="middle" font-size="8">has full state</text>
+        <circle cx="420" cy="80" r="18" fill="${projectColor}"/><text x="420" y="84" fill="white" text-anchor="middle" font-size="11" font-weight="700">p3</text>
+        <text x="420" y="112" fill="#00d4a7" text-anchor="middle" font-size="9" font-weight="700">Postgres ✓</text>
+        <text x="420" y="124" fill="var(--text-muted)" text-anchor="middle" font-size="8">has full state</text>
+        <path d="M232,80 L98,80" stroke="#00d4a7" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-g)"/>
+        <path d="M402,80 L98,72" stroke="#00d4a7" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-g)"/>
+        <defs><marker id="arr-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#00d4a7"/></marker></defs>
+        <text x="160" y="60" fill="#00d4a7" font-size="10" text-anchor="middle" font-weight="600">reliable-messaging replay</text>
+        <text x="20" y="165" fill="#8a94ad" font-size="10">→ p1 rebuilds its Postgres from peer state distribution. No plaintext loss because ≥1 peer had it.</text>
+      </svg>`;
+    case 'region': return `
+      <svg viewBox="0 0 500 180">
+        <text x="20" y="20" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">MULTI-REGION HA</text>
+        <rect x="30" y="35" width="130" height="120" rx="8" fill="rgba(77,124,254,0.06)" stroke="#4d7cfe" stroke-width="1" stroke-dasharray="4 4"/>
+        <text x="95" y="52" fill="#4d7cfe" font-size="10" font-weight="700" text-anchor="middle">REGION A · AZ 1</text>
+        <circle cx="70" cy="90" r="14" fill="${projectColor}"/><text x="70" y="94" fill="white" text-anchor="middle" font-size="10" font-weight="700">p1</text>
+        <circle cx="120" cy="90" r="14" fill="${projectColor}"/><text x="120" y="94" fill="white" text-anchor="middle" font-size="10" font-weight="700">p2</text>
+        <text x="95" y="140" fill="var(--danger)" font-size="11" text-anchor="middle" font-weight="700">✕ region down</text>
+        <rect x="180" y="35" width="130" height="120" rx="8" fill="rgba(77,124,254,0.06)" stroke="#4d7cfe" stroke-width="1" stroke-dasharray="4 4"/>
+        <text x="245" y="52" fill="#4d7cfe" font-size="10" font-weight="700" text-anchor="middle">REGION A · AZ 2</text>
+        <circle cx="245" cy="90" r="14" fill="${projectColor}"/><text x="245" y="94" fill="white" text-anchor="middle" font-size="10" font-weight="700">p3</text>
+        <text x="245" y="140" fill="#00d4a7" font-size="10" text-anchor="middle" font-weight="700">✓ serving</text>
+        <rect x="330" y="35" width="140" height="120" rx="8" fill="rgba(77,124,254,0.06)" stroke="#4d7cfe" stroke-width="1" stroke-dasharray="4 4"/>
+        <text x="400" y="52" fill="#4d7cfe" font-size="10" font-weight="700" text-anchor="middle">REGION B · DR</text>
+        <circle cx="400" cy="90" r="14" fill="${projectColor}"/><text x="400" y="94" fill="white" text-anchor="middle" font-size="10" font-weight="700">p4</text>
+        <text x="400" y="140" fill="#00d4a7" font-size="10" text-anchor="middle" font-weight="700">✓ serving</text>
+      </svg>`;
+    case 'catastrophic': return `
+      <svg viewBox="0 0 500 180">
+        <text x="20" y="20" fill="var(--danger)" font-size="11" font-weight="700" letter-spacing="1">⚠ WORST CASE — ALL MEMBERS LOST</text>
+        <circle cx="80" cy="70" r="16" fill="${projectColor}" opacity="0.25"/><text x="80" y="74" fill="#8a94ad" text-anchor="middle" font-size="11" font-weight="700">p1</text>
+        <text x="80" y="98" fill="var(--danger)" text-anchor="middle" font-size="9">Postgres ✕</text>
+        <circle cx="200" cy="70" r="16" fill="${projectColor}" opacity="0.25"/><text x="200" y="74" fill="#8a94ad" text-anchor="middle" font-size="11" font-weight="700">p2</text>
+        <text x="200" y="98" fill="var(--danger)" text-anchor="middle" font-size="9">Postgres ✕</text>
+        <circle cx="320" cy="70" r="16" fill="${projectColor}" opacity="0.25"/><text x="320" y="74" fill="#8a94ad" text-anchor="middle" font-size="11" font-weight="700">p3</text>
+        <text x="320" y="98" fill="var(--danger)" text-anchor="middle" font-size="9">Postgres ✕</text>
+        <ellipse cx="430" cy="70" rx="40" ry="20" fill="rgba(255,181,69,0.1)" stroke="#ffb545"/><text x="430" y="74" fill="#ffb545" text-anchor="middle" font-size="10" font-weight="700">Besu</text>
+        <text x="430" y="98" fill="var(--warning)" text-anchor="middle" font-size="9">only hashes</text>
+        <path d="M20,130 L480,130" stroke="var(--danger)" stroke-width="1" stroke-dasharray="4 4"/>
+        <text x="20" y="150" fill="var(--danger)" font-size="10" font-weight="700">Recovery path:</text>
+        <text x="20" y="164" fill="var(--text-muted)" font-size="10">→ Restore from off-Paladin encrypted backup (if project maintained one)</text>
+        <text x="20" y="176" fill="var(--text-muted)" font-size="10">→ Else: business-level re-derivation from external source-of-truth systems</text>
+      </svg>`;
+    case 'compensate': return `
+      <svg viewBox="0 0 500 180">
+        <text x="20" y="20" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">COMPENSATING TRANSACTION (application layer)</text>
+        <rect x="30" y="40" width="130" height="60" rx="6" fill="#131a2b" stroke="var(--danger)" stroke-width="1.5"/>
+        <text x="95" y="60" fill="var(--danger)" text-anchor="middle" font-size="10" font-weight="700">Tx #1234</text>
+        <text x="95" y="76" fill="var(--text-muted)" text-anchor="middle" font-size="9">transfer(alice, 1000)</text>
+        <text x="95" y="90" fill="var(--danger)" text-anchor="middle" font-size="9">← should be 100!</text>
+        <path d="M170,70 L200,70" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr-w)"/>
+        <defs><marker id="arr-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#8a94ad"/></marker></defs>
+        <rect x="210" y="30" width="130" height="80" rx="6" fill="#131a2b" stroke="var(--warning)" stroke-width="1.5"/>
+        <text x="275" y="50" fill="var(--warning)" text-anchor="middle" font-size="10" font-weight="700">Governance</text>
+        <text x="275" y="66" fill="var(--text-muted)" text-anchor="middle" font-size="9">multi-sig approves</text>
+        <text x="275" y="82" fill="var(--text-muted)" text-anchor="middle" font-size="9">reverseTransfer</text>
+        <text x="275" y="98" fill="var(--text-muted)" text-anchor="middle" font-size="9">(#1234, "wrong amt")</text>
+        <path d="M350,70 L380,70" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr-w)"/>
+        <rect x="390" y="40" width="100" height="60" rx="6" fill="#131a2b" stroke="var(--success)" stroke-width="1.5"/>
+        <text x="440" y="60" fill="var(--success)" text-anchor="middle" font-size="10" font-weight="700">Tx #1256</text>
+        <text x="440" y="76" fill="var(--text-muted)" text-anchor="middle" font-size="9">transfer(alice, -900)</text>
+        <text x="440" y="90" fill="var(--success)" text-anchor="middle" font-size="9">state corrected</text>
+        <text x="20" y="140" fill="#8a94ad" font-size="10">Both #1234 and #1256 remain on-chain. Full audit trail preserved.</text>
+        <text x="20" y="156" fill="#8a94ad" font-size="10">emit Compensated(#1234, "wrong amt") — auditors can trace the fix.</text>
+        <text x="20" y="172" fill="#8a94ad" font-size="10">Write-forward, never rewind.</text>
+      </svg>`;
+    case 'contract-upgrade': return `
+      <svg viewBox="0 0 500 180">
+        <text x="20" y="20" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">CONTRACT BUG → BLUE/GREEN MIGRATION</text>
+        <rect x="30" y="45" width="140" height="90" rx="8" fill="rgba(255,92,122,0.06)" stroke="var(--danger)" stroke-width="1.5"/>
+        <text x="100" y="62" fill="var(--danger)" text-anchor="middle" font-size="10" font-weight="700">Privacy Group A</text>
+        <text x="100" y="82" fill="var(--text-muted)" text-anchor="middle" font-size="9">Contract v1 (buggy)</text>
+        <text x="100" y="98" fill="var(--warning)" text-anchor="middle" font-size="10" font-weight="700">🛑 paused</text>
+        <text x="100" y="120" fill="var(--text-dim)" text-anchor="middle" font-size="9">(kept for audit)</text>
+        <path d="M180,90 L210,90" stroke="var(--warning)" stroke-width="1.5" marker-end="url(#arr-y2)"/>
+        <defs><marker id="arr-y2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#ffb545"/></marker></defs>
+        <text x="195" y="80" fill="var(--warning)" text-anchor="middle" font-size="9">migrate</text>
+        <rect x="220" y="45" width="140" height="90" rx="8" fill="rgba(0,212,167,0.06)" stroke="var(--success)" stroke-width="1.5"/>
+        <text x="290" y="62" fill="var(--success)" text-anchor="middle" font-size="10" font-weight="700">Privacy Group B</text>
+        <text x="290" y="82" fill="var(--text-muted)" text-anchor="middle" font-size="9">Contract v2 (fixed)</text>
+        <text x="290" y="98" fill="var(--success)" text-anchor="middle" font-size="10" font-weight="700">✓ new</text>
+        <text x="290" y="120" fill="var(--text-dim)" text-anchor="middle" font-size="9">same members</text>
+        <path d="M370,90 L400,90" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#arr-b)"/>
+        <defs><marker id="arr-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#4d7cfe"/></marker></defs>
+        <text x="385" y="80" fill="var(--primary)" text-anchor="middle" font-size="9">cutover</text>
+        <text x="435" y="90" fill="var(--primary)" font-size="10" font-weight="700">App</text>
+        <text x="20" y="160" fill="#8a94ad" font-size="10">Governance-approved migration function ports corrected state.</text>
+        <text x="20" y="174" fill="#8a94ad" font-size="10">Old contract preserved on-chain (never deleted).</text>
+      </svg>`;
+    case 'revoke': return `
+      <svg viewBox="0 0 500 180">
+        <text x="20" y="20" fill="#8a94ad" font-size="10" font-weight="700" letter-spacing="1">COMPROMISED IDENTITY · RECOVERY</text>
+        <rect x="30" y="35" width="440" height="50" rx="6" fill="rgba(255,92,122,0.06)" stroke="var(--danger)" stroke-width="1"/>
+        <text x="45" y="55" fill="var(--danger)" font-size="10" font-weight="700">1. DETECT</text>
+        <text x="45" y="72" fill="var(--text-muted)" font-size="10">Audit log anomaly · HSM alert · external report</text>
+        <rect x="30" y="95" width="440" height="50" rx="6" fill="rgba(255,181,69,0.06)" stroke="var(--warning)" stroke-width="1"/>
+        <text x="45" y="115" fill="var(--warning)" font-size="10" font-weight="700">2. REVOKE + ROTATE</text>
+        <text x="45" y="132" fill="var(--text-muted)" font-size="10">Key manager rotates identity's signing key. Old key can no longer endorse.</text>
+        <rect x="30" y="155" width="440" height="20" rx="4" fill="rgba(0,212,167,0.06)" stroke="var(--success)" stroke-width="1"/>
+        <text x="45" y="169" fill="var(--success)" font-size="9" font-weight="700">3. COMPENSATE — issue governance-guarded reverse-txs for unauthorised writes</text>
+      </svg>`;
+    case 'besu-quorum': return `
+      <svg viewBox="0 0 500 180">
+        <text x="20" y="20" fill="var(--danger)" font-size="11" font-weight="700" letter-spacing="1">⚠ BESU QUORUM LOST — SHARED IMPACT</text>
+        <text x="20" y="40" fill="#8a94ad" font-size="10">Below shows f=2, so 7 validators, need ≥5 (2f+1) alive.</text>
+        ${[0,1,2,3,4,5,6].map((i) => {
+          const alive = i < 4; // 3 dead
+          const x = 40 + i * 60;
+          return `
+            <circle cx="${x}" cy="80" r="14" fill="${alive ? '#ffb545' : '#5c667f'}" opacity="${alive ? 1 : 0.4}"/>
+            <text x="${x}" y="84" fill="${alive ? 'white' : '#8a94ad'}" text-anchor="middle" font-size="10" font-weight="700">v${i+1}</text>
+            ${alive ? '' : `<text x="${x}" y="105" fill="var(--danger)" text-anchor="middle" font-size="10" font-weight="700">✕</text>`}
+          `;
+        }).join('')}
+        <text x="250" y="140" fill="var(--danger)" text-anchor="middle" font-size="11" font-weight="700">3 down, quorum lost. Block production HALTS.</text>
+        <text x="250" y="158" fill="#8a94ad" text-anchor="middle" font-size="10">Every Paladin project's private-tx commits queue up until quorum restored.</text>
+        <text x="250" y="174" fill="var(--success)" text-anchor="middle" font-size="10">This is why 3f+1 sizing matters. With f=2, tolerates 2 (not 3).</text>
+      </svg>`;
+    case 'fork': return `
+      <svg viewBox="0 0 500 180">
+        <text x="20" y="20" fill="var(--danger)" font-size="11" font-weight="700" letter-spacing="1">⚠ MANUAL FORK — NUCLEAR OPTION</text>
+        ${[0,1,2,3,4].map((i) => `<circle cx="${60 + i * 50}" cy="70" r="10" fill="#ffb545"/><text x="${60 + i * 50}" y="74" fill="white" text-anchor="middle" font-size="8" font-weight="700">${100+i}</text>`).join('')}
+        <path d="M75,70 L100,70 M125,70 L150,70 M175,70 L200,70 M225,70 L250,70" stroke="#ffb545" stroke-width="1.5"/>
+        <line x1="235" y1="45" x2="235" y2="100" stroke="var(--danger)" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="235" y="35" fill="var(--danger)" text-anchor="middle" font-size="10" font-weight="700">fork point</text>
+        <circle cx="310" cy="70" r="10" fill="#ffb545" opacity="0.3"/><text x="310" y="74" fill="#8a94ad" text-anchor="middle" font-size="8" font-weight="700">104</text>
+        <circle cx="360" cy="70" r="10" fill="#ffb545" opacity="0.3"/><text x="360" y="74" fill="#8a94ad" text-anchor="middle" font-size="8" font-weight="700">105</text>
+        <text x="335" y="98" fill="var(--danger)" text-anchor="middle" font-size="10">✕ invalidated</text>
+        <text x="20" y="140" fill="var(--danger)" font-size="10" font-weight="700">Every Paladin private-tx committed after block 103 loses its base-chain anchor.</text>
+        <text x="20" y="156" fill="#8a94ad" font-size="10">Application state on member nodes must be manually reconciled — huge effort.</text>
+        <text x="20" y="172" fill="var(--success)" font-size="10">Always prefer application-layer compensation (previous scenario) over fork.</text>
+      </svg>`;
+    default: return '';
+  }
+}
+
+function renderBcpButtons() {
+  const container = document.getElementById('bcp-buttons');
+  if (!container) return;
+  container.innerHTML = state.projects.map(p => `
+    <button class="bcp-project-btn" data-bcp-pid="${p.id}">
+      <span class="dot" style="background: ${p.color};"></span>
+      <span class="lbl">🛡 BCP for ${escapeHtml(p.name)}</span>
+      <span class="go">→</span>
+    </button>
+  `).join('');
+  container.querySelectorAll('[data-bcp-pid]').forEach(el => {
+    el.addEventListener('click', () => openBcp('project', el.dataset.bcpPid));
+  });
+}
+
+/* =============================================================================
    Master render
    ============================================================================= */
 function renderAll() {
@@ -2903,6 +3776,14 @@ function renderAll() {
   renderInspector();
   renderMatrixRecommendation();
   renderDecideResult();
+  renderBcpButtons();
+  renderDisplayToggles();
+}
+
+function renderDisplayToggles() {
+  document.querySelectorAll('input[data-display]').forEach(el => {
+    el.checked = !!state.display[el.dataset.display];
+  });
 }
 
 /* =============================================================================
@@ -2914,12 +3795,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // rAF-throttle the slider so dragging stays smooth (input events fire
   // many times per second; we don't want to re-render the SVG each time)
   let ftPending = false;
+  let ftLastToasted = null;
   document.getElementById('ft-slider').addEventListener('input', e => {
-    state.besu.faultTolerance = parseInt(e.target.value, 10);
-    // Reflect the number immediately (cheap), throttle the SVG re-render
-    document.getElementById('ft-val').textContent = state.besu.faultTolerance;
+    const newF = parseInt(e.target.value, 10);
+    const oldF = state.besu.faultTolerance;
+    state.besu.faultTolerance = newF;
+    document.getElementById('ft-val').textContent = newF;
     document.getElementById('besu-total').textContent = besuNodeCount();
     document.getElementById('besu-tolerates').textContent = tolerates();
+    if (newF !== oldF && newF !== ftLastToasted) {
+      ftLastToasted = newF;
+      const total = 3 * newF + 1;
+      if (newF > oldF) {
+        toast(`Base Besu grew to ${total} validators. Now tolerates ${newF} simultaneous failures under BFT (3f+1). Every existing tenant benefits automatically.`, 'success');
+      } else {
+        toast(`Base Besu shrunk to ${total} validators. Tolerates only ${newF} failures now. Lose ${newF + 1} → block production halts for every tenant.`, 'warning');
+      }
+    }
     if (ftPending) return;
     ftPending = true;
     requestAnimationFrame(() => {
@@ -3055,6 +3947,35 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('mouseup', () => {
     if (panning) { panning = false; save(); }
   });
+
+  // Display-option checkboxes
+  document.querySelectorAll('input[data-display]').forEach(el => {
+    el.addEventListener('change', () => {
+      state.display[el.dataset.display] = el.checked;
+      save();
+      renderNetwork();
+    });
+  });
+
+  // BCP for shared Besu
+  document.getElementById('bcp-besu-btn').addEventListener('click', () => openBcp('besu'));
+
+  // BCP modal close (background click + close button + Escape)
+  document.getElementById('bcp-modal-close').addEventListener('click', closeBcp);
+  document.getElementById('bcp-modal').addEventListener('click', e => {
+    if (e.target.id === 'bcp-modal') closeBcp();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && state.bcp) closeBcp();
+  });
+
+  // Re-open BCP modal if it was open when the page was last refreshed
+  if (state.bcp) {
+    activeBcpScenarioId = state.bcp.scenarioId;
+    renderBcpModal();
+    document.getElementById('bcp-modal').classList.add('open');
+    document.querySelector('.canvas').classList.add('bcp-focused');
+  }
 
   switchMenu(state.activeMenu || 'pente');
   switchTab(state.activeTab || 'segregation');

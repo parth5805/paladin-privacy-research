@@ -129,10 +129,18 @@ state = {
   useCases: {},                          // matrix chip selections
   decideAnswers: {},                     // decision-helper answers
   view: { zoom: 1, panX: 0, panY: 0 },   // SVG viewBox transform
+  display: {                             // topology display toggles (v5+)
+    showDatabases: false,      // Postgres / RocksDB badges below nodes
+    showProtocolLabels: true,  // JSON-RPC / QBFT / member pill labels
+    showRpc: true,             // Paladin → Besu RPC curves
+    showP2p: true,             // Besu chain rails + block markers
+    showPgLinks: true,         // Privacy-group card → member Paladin lines
+  },
+  bcp: null,                             // { scope: 'project'|'besu', projectId?, scenarioId } when open
 };
 ```
 
-Persistence: `localStorage` key `sharedchain-demo-v4`. If you change the schema in a breaking way, **bump the version** in `LS_KEY` at the top of the script so existing users get a clean migration.
+Persistence: `localStorage` key `sharedchain-demo-v5`. If you change the schema in a breaking way, **bump the version** in `LS_KEY` at the top of the script so existing users get a clean migration. The current migration code in `load()` handles missing `display` and `bcp` fields defensively.
 
 ### 3.2 The render pipeline
 
@@ -344,6 +352,28 @@ Read `git log --oneline -20` for the most recent commits and their reasoning. Hi
 - **Identity model** — nodes host N named identities, group members reference `{projectId, nodeIndex, identity}` triples, node badge shows count when > 1.
 - **Zoom-at-cursor + rAF-throttled + exponential-to-deltaY** — the correct pattern for smooth zoom on both trackpad and mouse.
 - **New project default is 3 Paladin nodes** (was 2) — matches initial Project A default and gives a more realistic BFT-adjacent number.
+- **v5 additions (this session):**
+  - **Display-option checkboxes** in sidebar toggle visibility of RPC curves, P2P rails, PG links, protocol labels, and DB badges. All wired through `state.display.*` — respect these flags in `renderNetwork()`.
+  - **DB badges** (Postgres for Paladin, RocksDB for Besu) render below nodes when `state.display.showDatabases` is true. These are **factually correct** per upstream: Paladin's `DBConfig` supports `Postgres` + `SQLite` (see `config/pkg/pldconf/db.go`); Besu default is RocksDB.
+  - **BCP modal** launched from per-project buttons in sidebar + one button for shared Besu. Opens a full-screen modal (`#bcp-modal`) that greys out the underlying canvas (`.canvas.bcp-focused` filter). Contains 9 realistic BCP scenarios, each with a small SVG diagram, ownership chips, recovery timeline, and a "Ground truth" callout.
+  - **BCP scenarios are the source of truth for BCP claims.** All 9 map to real Paladin/Besu behaviour. Do not add fake scenarios. If you add a new one, cite the actual source (Paladin repo path, Besu docs URL, or PR discussion) in a code comment.
+  - **Impact toasts on topology changes** — `addProject`, `removeProject`, `changeProjectNodes`, and the fault-tolerance slider all emit contextual toasts that explain what actually happens (new PVC, HA improvement, quorum warning, etc.). Copy these patterns for any new topology mutation.
+  - **Storage engines + GKE deployment cards** added to the Guide panel — reference table + K8s deployment notes.
+
+## 10a. BCP scenario ground-truth reference
+
+If you edit, add, or challenge a BCP scenario, verify against these sources:
+
+| Claim | Source |
+|-------|--------|
+| Paladin uses Postgres or SQLite (nothing else) | `config/pkg/pldconf/db.go`: `type DBConfig struct { Type string; Postgres PostgresConfig; SQLite SQLiteConfig }` |
+| Paladin runs Postgres as sidecar in K8s deployment | Live cluster verified: `postgres:17.6` container alongside `paladin:v1.0.0` (see `evidence/deployed-image.txt`) |
+| Reliable-messaging peer resync recovers a lost node's DB | Paladin transport layer + state distribution — see `core/go/internal/privatetxnmgr/` in upstream |
+| No rollback in append-only ledger | Blockchain fundamental. Compensating tx is the recovery pattern. |
+| Manual Besu fork is technically possible but nuclear | Permissioned chain design; all validators must coordinate. See Besu / QBFT docs. |
+| 3f+1 BFT sizing | Standard BFT / QBFT / IBFT requirement. `f` failures need `3f+1` validators for liveness. |
+| All-member-loss → plaintext unrecoverable | Base chain has only opaque UTXO commitments; without the pre-image (stored on member nodes' Postgres), plaintext cannot be reversed. Andrew Richardson (Paladin maintainer) design commentary on PR #912 confirms this model. |
+| Compensating-tx pattern | Application-layer pattern documented in `docs/05-adoption-planning-discussion.md`; not a Paladin feature but the correct architectural response. |
 
 ---
 
